@@ -1,0 +1,359 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+}
+
+.agricul-farm-section .section-wrapper .farm-left .agricul-farm-animate .farm-line:nth-child(1) {
+  top: 75%;
+  left: 26%;
+}
+
+.header-section .primary-menu .navbar-toggler {
+  display: none;
+}
+
+.header-area {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.header-section .header-area.menu-fixed {
+  left: 50%;
+  transform: translate(-50%, 0%);
+}
+
+.banner {
+  background: url(../assets/images/background1.jpg) no-repeat center center / cover;
+  text-align: center;
+}
+
+.transparent-header .header-area.menu-fixed {
+  background: #e3e3e3;
+}
+
+.banner .banner-content .banner-title {
+  color: #517849;
+  font-size: 4vw; /* Font responsif */
+}
+
+.banner .banner-content .banner-desc {
+  color: #000;
+  text-transform: uppercase;
+  text-shadow: 2px 2px #FFF;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.title-about {
+  text-transform: uppercase;
+}
+
+footer {
+  padding: 0.6rem 0 0.8rem 0;
+  line-height: 1.2rem;
+  color: rgb(141, 141, 141);
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+  border-top: 1px solid #ddd;
+  z-index: 200;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  text-align: center;
+}
+
+.text-footer {
+  font-weight: 400;
+  font-size: 0.7rem;
+}
+
+i.icon-footer {
+  display: block;
+  font-size: 1.4rem;
+}
+
+a.footer {
+  color: rgb(141, 141, 141);
+}
+
+a {
+  text-decoration: none;
+}
+
+.active-menu {
+  color: #d72d3d !important;
+}
+
+.btn-circle.btn-lg {
+  width: 60px;
+  height: 60px;
+  padding: 5px 8px;
+  font-size: 25px;
+  line-height: 1.33;
+  border-radius: 30px;
+}
+
+.btn-middle-footer {
+  position: relative;
+  top: -20px;
+}
+
+.position-sticky {
+  z-index: 8;
+  top: 0px;
+  background-color: #fff;
+  transition: box-shadow 0.3s ease;
+}
+
+.position-sticky-2 {
+  top: 87px;
+}
+
+.box-shadow-active {
+  box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.nav-link {
+  color: #0d6efd;
+}
+
+.feature-item .feature-inner .feature-thumb {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.feature-item .feature-inner .feature-content {
+  width: 100%;
+}
+
+.feature-item .feature-inner {
+  text-align: center;
+}
+
+.about-item .about-inner .about-content p {
+  max-width: 100%;
+}
+
+/* Responsivitas */
+@media (max-width: 576px) {
+  .banner .banner-content .banner-title {
+    font-size: 24px;
+  }
+
+  .header-area {
+    max-width: 100%;
+  }
+
+  footer {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-section .header-area.menu-fixed {
+    padding: 0 10px;
+  }
+
+  .banner .banner-content .banner-desc {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 992px) {
+  .banner .banner-content .banner-title {
+    font-size: 32px;
+  }
+
+  .footer {
+    font-size: 0.7rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .header-area {
+    max-width: 1200px;
+  }
+
+  .banner .banner-content .banner-title {
+    font-size: 48px;
+  }
+
+  .banner .banner-content .banner-desc {
+    font-size: 18px;
+  }
+}
+
+.filter-outline {
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  min-height: calc(100vh - 150px); /* Menyesuaikan tinggi agar tidak terlalu memenuhi viewport */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 auto;
+  margin-top: 20px;
+}
+
+/* Untuk perangkat kecil (mobile) */
+@media (max-width: 768px) {
+  .filter-outline {
+    min-height: calc(100vh - 100px); /* Sedikit lebih pendek di layar kecil */
+    padding: 15px;
+  }
+}
+
+/* Untuk tablet atau layar medium */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .filter-outline {
+    min-height: calc(100vh - 120px);
+  }
+}
+
+/* Untuk layar besar (desktop) */
+@media (min-width: 1024px) {
+  .filter-outline {
+    min-height: calc(100vh - 150px);
+  }
+}
+
+.card {
+  background-color: #f8f9fa;
+  border:none;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s, box-shadow 0.3s; /* Menambahkan efek transisi */
+  position: relative; /* Menambahkan posisi relatif */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Jarak antar card */
+  justify-content: space-between; /* Agar card tersebar merata */
+  padding: 20px; /* Ruang dalam container */
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Efek mengangkat saat hover */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Bayangan lebih dalam saat hover */
+}
+
+.total-value {
+  font-size: 3.2rem; /* Ukuran font total-value */
+  font-weight: bold;
+  color: #343a40;
+  margin: 0 0 20px 0; /* Menambahkan margin bawah untuk memberi jarak */
+  text-align: left; /* Menyelaraskan teks ke kiri */
+  line-height: 1;
+}
+
+.small-decimal {
+  font-size: 0.5em; /* Atur ukuran font sesuai kebutuhan */
+  margin-top: -5px; /* Mengurangi jarak atas dari desimal */
+  vertical-align: super; /* Jika ingin mengangkat sedikit */
+  color: gray; /* Mengubah warna font menjadi abu-abu */
+}
+
+.unit {
+  font-size: 1.5rem;
+  color: #6c757d;
+  position: absolute; /* Mengubah posisi menjadi absolute */
+  top: 20px; /* Menyesuaikan posisi unit dari atas */
+  right: 20px; /* Menyesuaikan posisi unit dari kanan */
+  transition: color 0.3s; /* Menambahkan efek transisi pada warna */
+}
+
+.card-title {
+  font-family: Calibri, sans-serif;
+  font-size: 0.9rem; /* Mengurangi ukuran font judul */
+  color: #dc3545;; /* Menggunakan warna merah yang lebih cerah */
+  position: absolute; /* Mengubah posisi menjadi absolute */
+  bottom: 5px; /* Menyesuaikan posisi judul dari bawah */
+  right: 20px; /* Menyesuaikan posisi judul dari kanan */
+  text-align: right; /* Menyelaraskan teks ke kanan */
+  transition: color 0.3s;
+}
+
+.sticky-top {
+  z-index: 1030; /* Pastikan elemen tetap berada di atas elemen lain */
+  background-color: #ffffff; /* Tambahkan latar belakang putih */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Tambahkan shadow untuk pemisah */
+}
+
+.position-sticky-1 {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  padding: 15px;
+  transition: box-shadow 0.3s ease;
+}
+
+.box-shadow-active {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+.btn-group {
+  background-color: #f0f0f0;
+  border-radius: 30px;
+  padding: 4px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.toggle-btn {
+  border-radius: 25px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin: 0 4px;
+  border: 1px solid #007bff; /* Warna biru sebagai default */
+  color: #007bff;
+  background-color: transparent;
+}
+
+.toggle-btn.active[data-mode="harvest"] {
+  background-color: #28a745; /* Hijau untuk Sudah Panen */
+  border-color: #28a745;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.toggle-btn.active[data-mode="seed"] {
+  background-color: #007bff; /* Biru untuk Akan Panen */
+  border-color: #007bff;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 255, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.toggle-btn:hover::before {
+  opacity: 1;
+}
+
+.toggle-btn i {
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.toggle-btn.active i {
+  transform: rotate(360deg);
+}
+
+

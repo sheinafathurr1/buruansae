@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    DirectoryIndex index.php
+    Options -Indexes
+    
+    RewriteEngine On
+    
+    # Unconditionally rewrite everything to the "public" subdirectory
+    RewriteRule (.*) public/$1 [L]
+</IfModule>
