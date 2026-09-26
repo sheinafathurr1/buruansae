@@ -38,11 +38,14 @@ class Commodity extends Model
         return $this->hasMany(Production::class);
     }
 
-    /** URL gambar komoditas, atau null bila belum ada gambar. */
+    /** URL gambar komoditas, atau null bila belum ada gambar atau filenya tidak ada. */
     protected function imageUrl(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->image
-            ? Storage::disk('public')->url(self::IMAGE_DIRECTORY.'/'.$this->image)
-            : null);
+        // Sebagian foto lama tidak ikut tersalin; jangan tampilkan gambar rusak.
+        return Attribute::get(function (): ?string {
+            $path = self::IMAGE_DIRECTORY.'/'.$this->image;
+
+            return $this->image && Storage::disk('public')->exists($path) ? Storage::disk('public')->url($path) : null;
+        });
     }
 }

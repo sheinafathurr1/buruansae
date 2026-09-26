@@ -255,4 +255,38 @@ class ProductionTest extends TestCase
         $this->assertSame(0, Distribution::count());
         Storage::disk('public')->assertMissing(Production::IMAGE_DIRECTORY.'/foto.jpg');
     }
+
+    public function test_image_url_is_null_when_the_file_is_missing(): void
+    {
+        Storage::disk('public')->put(Production::IMAGE_DIRECTORY.'/ada.jpg', 'x');
+        $withFile = Production::factory()->for($this->group)->for($this->kangkung)->create(['image' => 'ada.jpg']);
+        $missing = Production::factory()->for($this->group)->for($this->kangkung)->create(['image' => 'hilang.jpg']);
+
+        $this->assertStringEndsWith('/storage/images/panen/ada.jpg', $withFile->image_url);
+        $this->assertNull($missing->image_url);
+    }
+
+    public function test_shared_legacy_photo_is_kept_until_no_production_uses_it(): void
+    {
+        // Setelah duplikat dirapikan, satu foto lama dipakai banyak data panen.
+        $path = Production::IMAGE_DIRECTORY.'/1782462719_9f5b9698f714581ea13b.jpg';
+        Storage::disk('public')->put($path, 'x');
+        [$first, $second, $third] = Production::factory()->count(3)->for($this->group)->for($this->kangkung)
+            ->create(['image' => '1782462719_9f5b9698f714581ea13b.jpg', 'start_date' => '2026-06-01'])->all();
+
+        $this->delete("/admin/produksi/vegetable/{$first->id}")->assertSessionHas('success');
+        Storage::disk('public')->assertExists($path);
+
+        // Mengganti foto satu data panen tidak menghapus foto yang masih dipakai data lain.
+        $this->put("/admin/produksi/vegetable/{$second->id}/panen", [
+            'harvest_date' => '2026-06-14',
+            'photo' => UploadedFile::fake()->image('baru.jpg'),
+            'distributions' => ['KP' => ['quantity' => '2']],
+        ])->assertSessionHasNoErrors();
+        $this->assertNotSame('1782462719_9f5b9698f714581ea13b.jpg', $second->fresh()->image);
+        Storage::disk('public')->assertExists($path);
+
+        $this->delete("/admin/produksi/vegetable/{$third->id}")->assertSessionHas('success');
+        Storage::disk('public')->assertMissing($path);
+    }
 }

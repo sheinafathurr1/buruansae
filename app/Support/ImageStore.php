@@ -2,7 +2,11 @@
 
 namespace App\Support;
 
+use App\Models\Commodity;
+use App\Models\FarmerGroup;
+use App\Models\Production;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -14,6 +18,18 @@ use Illuminate\Support\Str;
 final class ImageStore
 {
     public const MAX_WIDTH = 1600;
+
+    /**
+     * Tabel & kolom yang menyimpan nama file di tiap folder. Foto dari aplikasi
+     * lama dipakai bersama oleh banyak baris (duplikatnya sudah dirapikan), jadi
+     * file baru dihapus bila tidak ada baris lain yang masih memakainya.
+     */
+    private const REFERENCES = [
+        Production::IMAGE_DIRECTORY => ['productions' => ['image']],
+        Commodity::IMAGE_DIRECTORY => ['commodities' => ['image']],
+        // Termasuk kelompok yang di-soft delete: fotonya kembali bila dipulihkan.
+        FarmerGroup::PHOTO_DIRECTORY => ['farmer_groups' => ['land_photo', 'leader_photo']],
+    ];
 
     /** @return string nama file (tanpa folder) */
     public static function store(UploadedFile $file, string $directory): string
@@ -27,11 +43,29 @@ final class ImageStore
         return $name;
     }
 
+    /** Panggil SETELAH baris pemilik file diubah/dihapus. */
     public static function delete(?string $name, string $directory): void
     {
-        if ($name) {
+        if ($name && ! self::isReferenced($name, $directory)) {
             Storage::disk('public')->delete($directory.'/'.$name);
         }
+    }
+
+    private static function isReferenced(string $name, string $directory): bool
+    {
+        foreach (self::REFERENCES[$directory] ?? [] as $table => $columns) {
+            $query = DB::table($table)->where(function ($query) use ($columns, $name) {
+                foreach ($columns as $column) {
+                    $query->orWhere($column, $name);
+                }
+            });
+
+            if ($query->exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function downscale(string $path, string $extension): ?string

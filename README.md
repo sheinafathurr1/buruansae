@@ -135,7 +135,10 @@ php artisan icons:cache
 - Idealnya document root domain diarahkan ke folder `public/`. Bila hosting memaksa document root di folder proyek,
   file `.htaccess` di root meneruskan semua permintaan ke `public/` dan menolak akses ke file sensitif.
 - File unggahan disimpan di `storage/app/public/images/`: `panen/` (foto hasil panen), `kelompok/` (foto lahan & ketua),
-  dan langsung di `images/` (gambar komoditas, sama seperti aplikasi lama `storage/images`).
+  dan langsung di `images/` (gambar komoditas, sama seperti aplikasi lama `storage/images`). Foto dari aplikasi lama
+  ikut di repo; unggahan baru tidak. `public/storage` harus symlink dari `php artisan storage:link` (bukan folder
+  biasa), dan `APP_URL` harus alamat situs yang benar karena URL gambar dibentuk darinya. Rincian di
+  [`docs/DATABASE.md`](docs/DATABASE.md#gambar-dari-aplikasi-lama).
 - Setelah mengubah `.env` di server, jalankan `php artisan optimize` lagi.
 
 ## Memindahkan data dari database lama

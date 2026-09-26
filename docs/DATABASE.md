@@ -11,6 +11,7 @@ database/seeders/RecipientCategorySeeder.php    10 kategori penerima (data acuan
 database/seeders/DemoSeeder.php                 data contoh untuk lokal/staging
 database/sql/import_data_lama.sql               pemindahan data dari database lama
 database/sql/persiapan_data_lama.sql            pembersihan salinan database lama sebelum impor
+database/sql/rapikan_gambar_lama.sql            arahkan data panen ke foto lama yang sudah dirapikan (sekali, di hosting)
 ```
 
 Perbedaan dari paket `newdb/` asli:
@@ -121,10 +122,34 @@ Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
 6. **Unggah ke hosting:** export database `buruansae`, lalu import ke database **baru yang masih kosong** di hosting.
    Jangan import ke database aplikasi lama: nama tabel `users` dan `migrations` sama, dan dump berisi
    `DROP TABLE IF EXISTS`.
-7. **Pindahkan file gambar** (kolom database hanya menyimpan nama file), lalu jalankan `php artisan storage:link`:
-   - gambar komoditas → `storage/app/public/images/`
-   - foto hasil panen (aplikasi CodeIgniter menyimpannya di `public/asset/`) → `storage/app/public/images/panen/`
-   - foto lahan & ketua kelompok → `storage/app/public/images/kelompok/`
+7. **File gambar.** Kolom database hanya menyimpan nama file. Foto lama sudah ada di repo (lihat
+   [Gambar dari aplikasi lama](#gambar-dari-aplikasi-lama)); setelah deploy, jalankan sekali
+   `database/sql/rapikan_gambar_lama.sql` di database hosting, lalu `php artisan storage:link`.
+
+### Gambar dari aplikasi lama
+
+Foto yang disalin dari aplikasi lama (1.126 file, 139 MB) sudah dirapikan di repo menjadi 135 file (17 MB):
+
+| Folder | Isi |
+|---|---|
+| `storage/app/public/images/` | gambar komoditas (10 file) |
+| `storage/app/public/images/panen/` | foto hasil panen (125 file) |
+| `storage/app/public/images/kelompok/` | foto lahan & ketua kelompok (data lama tidak punya) |
+
+- **Duplikat:** banyak foto panen sama persis isinya (satu foto diunggah ulang untuk banyak data, sampai
+  132 kali). Hanya satu salinan yang disimpan; `database/sql/rapikan_gambar_lama.sql` mengarahkan 939 data panen
+  ke salinan itu. Karena satu file bisa dipakai banyak data, `ImageStore::delete()` baru menghapus file bila tidak
+  ada baris lain yang masih memakainya.
+- **Dihapus karena tidak dipakai database:** gambar tema aplikasi lama (`banner.jpg`, `sayur.jpg`, logo, dsb.) dan
+  foto milik data uji yang sudah dihapus.
+- **Belum ada filenya:** 54 gambar komoditas dan 4 foto panen dirujuk database tetapi tidak ikut tersalin. Gambar
+  komoditas dulu dibaca portal lama dari `storage/app/public/images/` di server portal lama; salin file dengan nama
+  yang sama ke `storage/app/public/images/` (atau `images/panen/` untuk foto panen). Sampai filenya ada, gambar itu
+  tidak ditampilkan (bukan gambar rusak).
+- **Git:** `storage/app/public/.gitignore` hanya memasukkan file bernama gaya lama (`1742111697_9f63….png`).
+  Unggahan baru dari dashboard (nama acak 32 karakter) tidak ikut git, jadi tidak tertimpa atau terhapus saat deploy.
+- `public/storage` harus berupa **symlink** hasil `php artisan storage:link`, bukan folder biasa. Bila di server
+  sudah terlanjur ada folder `public/storage`, hapus dulu foldernya, lalu jalankan `php artisan storage:link`.
 
 Id kecamatan, kelurahan, kelompok, komoditas, rekap, dan user dipertahankan; id produksi dibuat baru. Menjalankan
 ulang skrip akan gagal dengan "Duplicate entry" (bukan menggandakan data). Untuk mengulang: `migrate:fresh --seed`
