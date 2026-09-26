@@ -41,7 +41,7 @@
         <h2 id="angka-title" class="sr-only">Buruan SAE dalam angka</h2>
         <ul class="card grid grid-cols-2 divide-slate-100 p-2 max-lg:gap-y-2 lg:grid-cols-4 lg:divide-x">
             @foreach ([
-                ['Kelompok Buruan SAE', format_number($stats['groups'], 0), format_number($stats['active_groups'], 0).' kelompok aktif', 'user-group'],
+                ['Kelompok Buruan SAE', format_number($stats['groups'], 0), format_number($stats['active_groups'], 0).' terkonfirmasi aktif', 'user-group'],
                 ['Kelurahan terjangkau', format_number($stats['villages'], 0), 'di '.format_number($stats['districts'], 0).' kecamatan', 'map-pin'],
                 ['Hasil panen '.$stats['year'], format_number($stats['harvest_kg_this_year'], 0), 'kilogram, seluruh sektor', 'scale'],
                 ['Warga penerima '.$stats['year'], format_number($stats['beneficiaries_this_year'], 0), 'orang menerima hasil yang dibagikan', 'heart'],

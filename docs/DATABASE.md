@@ -10,6 +10,7 @@ database/seeders/SectorSeeder.php               8 sektor (data acuan)
 database/seeders/RecipientCategorySeeder.php    10 kategori penerima (data acuan)
 database/seeders/DemoSeeder.php                 data contoh untuk lokal/staging
 database/sql/import_data_lama.sql               pemindahan data dari database lama
+database/sql/persiapan_data_lama.sql            pembersihan salinan database lama sebelum impor
 ```
 
 Perbedaan dari paket `newdb/` asli:
@@ -99,11 +100,13 @@ Sektor ditentukan dari `productions.commodity_id → commodities.sector_id`.
 
 Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
 
-1. **Siapkan database lama.** Buat database `buruansae_lama` dan import dump produksi terbaru ke dalamnya.
-   Paket `newdb/` asli merujuk dua file persiapan, `01_perbaikan_fase1.sql` dan `02_laporan_review.sql`
-   (bereskan temuan bagian A — data uji — dan B — kelurahan tidak dikenal). **Kedua file itu tidak ikut di folder
-   `newdb/`**, jadi minta dari penyusun paket database. Tanpa perbaikan itu, skrip impor sengaja berhenti dengan
-   error `Column 'village_id' cannot be null`.
+1. **Siapkan database lama.** Buat database `buruansae_lama`, import dump produksi terbaru ke dalamnya, lalu jalankan
+   skrip persiapan (mengubah isi `buruansae_lama` saja — jangan jalankan di database produksi):
+   ```bash
+   mysql -u root buruansae_lama < database/sql/persiapan_data_lama.sql
+   ```
+   Di akhir output, `kelompok_tanpa_kelurahan` dan `rekap_tanpa_kelurahan` harus 0 dan daftar `nilai_dibulatkan`
+   kosong. Isi skrip dijelaskan di [Persiapan data lama](#persiapan-data-lama).
 2. **Siapkan database Laravel** `buruansae` di server MariaDB yang sama:
    ```bash
    php artisan migrate:fresh --seed
@@ -115,7 +118,9 @@ Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
 4. **Cek hasil verifikasi** di akhir output: setiap tabel harus `baris_berbeda = 0`, dan query distribusi tidak
    mengembalikan baris sama sekali.
 5. **Setel ulang password** (lihat di bawah), lalu `php artisan cache:clear` supaya angka beranda & peta diperbarui.
-6. **Unggah ke hosting:** export database `buruansae`, import ke database hosting.
+6. **Unggah ke hosting:** export database `buruansae`, lalu import ke database **baru yang masih kosong** di hosting.
+   Jangan import ke database aplikasi lama: nama tabel `users` dan `migrations` sama, dan dump berisi
+   `DROP TABLE IF EXISTS`.
 7. **Pindahkan file gambar** (kolom database hanya menyimpan nama file), lalu jalankan `php artisan storage:link`:
    - gambar komoditas → `storage/app/public/images/`
    - foto hasil panen (aplikasi CodeIgniter menyimpannya di `public/asset/`) → `storage/app/public/images/panen/`
@@ -124,6 +129,35 @@ Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
 Id kecamatan, kelurahan, kelompok, komoditas, rekap, dan user dipertahankan; id produksi dibuat baru. Menjalankan
 ulang skrip akan gagal dengan "Duplicate entry" (bukan menggandakan data). Untuk mengulang: `migrate:fresh --seed`
 lalu impor lagi.
+
+### Persiapan data lama
+
+`database/sql/persiapan_data_lama.sql` menggantikan file `01_perbaikan_fase1.sql` dan `02_laporan_review.sql` yang
+dirujuk paket `newdb/` asli tetapi tidak ikut disertakan. Isinya disusun dari pemeriksaan dump produksi
+23 September 2026:
+
+| Temuan di data lama | Tindakan |
+|---|---|
+| Collation tabel campuran (`utf8mb3_general_ci`, `utf8mb4_general_ci`, `utf8mb4_unicode_ci`) → error "Illegal mix of collations" | Semua tabel diubah ke `utf8mb4_unicode_ci` |
+| Kelompok uji 566 & 610 (nama "Tes") | Dihapus beserta seluruh datanya |
+| Olahan hasil 19, 22, 23 (merk/resep "Tes"), bibit 40 ("Tes Bibit"), sampah 1 (semua angka 1), komoditas "Tes" & "Tes Bibit" | Dihapus. Akibatnya sektor olahan hasil, bibit, dan olahan sampah belum punya data |
+| 26 baris sayur milik kelompok yang sudah tidak ada (id 0, 69, 448) | Dihapus (skema baru mewajibkan kelompok) |
+| `data_kelurahan` tidak punya relasi ke kecamatan | Kolom `id_kecamatan` ditambahkan dan diisi dari rekap distribusi (tiap kelurahan selalu tercatat di satu kecamatan), cadangannya dari data kelompok. Hasilnya 151 kelurahan di 30 kecamatan |
+| Teks kelurahan/kecamatan di kelompok & rekap berbeda ejaan ("Pasir Kaliki", "Buah Batu", karakter BOM di "ANDIR", "Huseinsastranegara 06") | Dicocokkan setelah dinormalkan (huruf besar, hanya A–Z), lalu ditulis ulang memakai nama master. Kecamatan diambil dari kelurahannya |
+| Salah ketik kelurahan: Cijawura, Cimincrang, Hegarnanah, Cikadung | Dianggap CIJAURA, CIMENCRANG, HEGARMANAH, CIPADUNG (daftar `_alias_kelurahan`) |
+| `rw` berisi "RW 05", "-", "0", "00"; `luas_lahan` berisi "-" | "RW 05" → 5; selain angka 1–255 → NULL |
+| Tanggal kosong tersimpan `0000-00-00` | NULL |
+| `data_ikan.waktu_pakan` bertipe teks (satu baris "1/13/2024") | Diubah ke DATE |
+| Kategori tanaman "BENIIH", "BIBT" | Benih, Bibit |
+| Nama komoditas master campuran huruf besar/kecil | Diseragamkan huruf besar |
+| Tabel lama tidak punya `created_at`/`updated_at` | Kolom ditambahkan kosong (NULL) |
+
+Beberapa tanggal dengan tahun tidak masuk akal (mis. 0026, 2925, 1900) **tidak diubah** agar tidak menebak; skrip
+menampilkan daftarnya (`tanggal_janggal`) untuk dibetulkan lewat dashboard setelah impor. Komoditas yang dipakai data
+produksi tetapi belum ada di master (mis. SINGKONG di sektor sayur) ditambahkan otomatis oleh skrip impor.
+
+Angka lama bertipe FLOAT (1.2 tersimpan 1.2000000477), jadi verifikasi skrip impor membandingkan setelah angka lama
+dikonversi ke tipe DECIMAL kolom barunya. Skrip persiapan memastikan konversi itu tidak membulatkan nilai apa pun.
 
 ### Password lama tidak bisa dipakai
 

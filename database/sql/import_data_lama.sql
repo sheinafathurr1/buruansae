@@ -6,11 +6,11 @@
 --  (tabel masih kosong kecuali sectors & recipient_categories).
 --
 --  Database lama harus ada di SERVER YANG SAMA dengan nama `buruansae_lama`
---  (kalau namanya lain, cari-ganti `buruansae_lama` di file ini), dan sudah:
---    1. dijalankan file 01_perbaikan_fase1.sql, dan
---    2. dibereskan temuan laporan 02 bagian A (data uji) & B (kelurahan tidak
---       dikenal). Kalau belum, script berhenti dengan error
---       "Column 'village_id' cannot be null" — disengaja.
+--  (kalau namanya lain, cari-ganti `buruansae_lama` di file ini), dan sudah
+--  dijalankan persiapan_data_lama.sql (collation, data uji, relasi kelurahan →
+--  kecamatan, nama wilayah, tanggal 0000-00-00, kolom waktu). Kalau belum,
+--  script berhenti dengan error, mis. "Unknown column 'id_kecamatan'" atau
+--  "Column 'village_id' cannot be null" — disengaja.
 --
 --  Script ini hanya MEMBACA database lama. Id kecamatan, kelurahan, kelompok,
 --  komoditas, rekap, dan user dipertahankan; id produksi dibuat baru.
@@ -447,6 +447,10 @@ ORDER BY id;
 -- 8. VERIFIKASI
 --    (a) Setiap baris lama dibandingkan kolom per kolom dengan baris barunya.
 --        Benar bila baris_lama = baris_baru dan baris_berbeda = 0.
+--        Angka lama bertipe FLOAT (1.2 tersimpan 1.2000000477), jadi
+--        dibandingkan setelah dikonversi ke tipe DECIMAL kolom barunya;
+--        persiapan_data_lama.sql sudah memastikan konversi itu tidak
+--        membulatkan nilai apa pun.
 -- -----------------------------------------------------------------------------
 SELECT 'data_sayur' AS tabel_lama,
   (SELECT COUNT(*) FROM `buruansae_lama`.`data_sayur`) AS baris_lama,
@@ -460,14 +464,14 @@ SELECT 'data_sayur' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`nama_sayur`)
         AND pr.start_date <=> s.`tanggal_tanam`
-        AND pr.initial_quantity <=> s.`jumlah_tanam`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_tanam` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen` AS DECIMAL(12,3))
         AND pr.harvest_head_count <=> NULL
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3))
         AND pr.planting_category <=> CASE UPPER(s.`kategori_tumbuhan`) WHEN 'BENIH' THEN 'seed' WHEN 'BIBIT' THEN 'seedling' WHEN 'POHON' THEN 'tree' END)) AS baris_berbeda
 UNION ALL
 SELECT 'data_buah' AS tabel_lama,
@@ -482,14 +486,14 @@ SELECT 'data_buah' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`nama_buah`)
         AND pr.start_date <=> s.`tanggal_tanam`
-        AND pr.initial_quantity <=> s.`jumlah_tanam`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_tanam` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen` AS DECIMAL(12,3))
         AND pr.harvest_head_count <=> NULL
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3))
         AND pr.planting_category <=> CASE UPPER(s.`kategori_tumbuhan`) WHEN 'BENIH' THEN 'seed' WHEN 'BIBIT' THEN 'seedling' WHEN 'POHON' THEN 'tree' END)) AS baris_berbeda
 UNION ALL
 SELECT 'data_tanaman_obat' AS tabel_lama,
@@ -504,14 +508,14 @@ SELECT 'data_tanaman_obat' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`nama_tanaman_obat`)
         AND pr.start_date <=> s.`tanggal_tanam`
-        AND pr.initial_quantity <=> s.`jumlah_tanam`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_tanam` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen` AS DECIMAL(12,3))
         AND pr.harvest_head_count <=> NULL
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3))
         AND pr.planting_category <=> CASE UPPER(s.`kategori_tumbuhan`) WHEN 'BENIH' THEN 'seed' WHEN 'BIBIT' THEN 'seedling' WHEN 'POHON' THEN 'tree' END)) AS baris_berbeda
 UNION ALL
 SELECT 'data_ikan' AS tabel_lama,
@@ -526,14 +530,14 @@ SELECT 'data_ikan' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`jenis_ikan`)
         AND pr.start_date <=> NULL
-        AND pr.initial_quantity <=> s.`jumlah_ikan`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_ikan` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen_kg`
-        AND pr.harvest_head_count <=> s.`jumlah_panen_ekor`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen_kg` AS DECIMAL(12,3))
+        AND pr.harvest_head_count <=> CAST(s.`jumlah_panen_ekor` AS DECIMAL(12,2))
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen)) AS baris_berbeda
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3)))) AS baris_berbeda
 UNION ALL
 SELECT 'data_ternak' AS tabel_lama,
   (SELECT COUNT(*) FROM `buruansae_lama`.`data_ternak`) AS baris_lama,
@@ -547,14 +551,14 @@ SELECT 'data_ternak' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`jenis_ternak`)
         AND pr.start_date <=> NULL
-        AND pr.initial_quantity <=> s.`jumlah_ternak`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_ternak` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen_kg`
-        AND pr.harvest_head_count <=> s.`jumlah_panen_ekor`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen_kg` AS DECIMAL(12,3))
+        AND pr.harvest_head_count <=> CAST(s.`jumlah_panen_ekor` AS DECIMAL(12,2))
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen)) AS baris_berbeda
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3)))) AS baris_berbeda
 UNION ALL
 SELECT 'data_olahan_hasil' AS tabel_lama,
   (SELECT COUNT(*) FROM `buruansae_lama`.`data_olahan_hasil`) AS baris_lama,
@@ -570,7 +574,7 @@ SELECT 'data_olahan_hasil' AS tabel_lama,
         AND pr.start_date <=> s.`tanggal_produksi`
         AND pr.initial_quantity <=> NULL
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen` AS DECIMAL(12,3))
         AND pr.harvest_head_count <=> NULL
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar)) AS baris_berbeda
@@ -587,14 +591,14 @@ SELECT 'data_bibit' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`nama_sayur`)
         AND pr.start_date <=> s.`tanggal_tanam`
-        AND pr.initial_quantity <=> s.`jumlah_semai`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_semai` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen` AS DECIMAL(12,3))
         AND pr.harvest_head_count <=> NULL
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3))
         AND pr.notes <=> s.`keterangan`)) AS baris_berbeda
 UNION ALL
 SELECT 'data_sampah' AS tabel_lama,
@@ -609,14 +613,14 @@ SELECT 'data_sampah' AS tabel_lama,
         AND pr.farmer_group_id <=> s.id_kelompok
         AND c.name = TRIM(s.`jenis_pengolahan`)
         AND pr.start_date <=> s.`tanggal_masuk`
-        AND pr.initial_quantity <=> s.`jumlah_sampah`
+        AND pr.initial_quantity <=> CAST(s.`jumlah_sampah` AS DECIMAL(12,2))
         AND pr.harvest_date <=> s.waktu_panen
-        AND pr.harvest_quantity <=> s.`jumlah_panen`
+        AND pr.harvest_quantity <=> CAST(s.`jumlah_panen` AS DECIMAL(12,3))
         AND pr.harvest_head_count <=> NULL
         AND pr.selling_price <=> s.harga_jual
         AND pr.image <=> s.gambar
         AND pr.estimated_harvest_date <=> s.waktu_prakiraan_panen
-        AND pr.estimated_harvest_quantity <=> s.prakiraan_jumlah_panen)) AS baris_berbeda;
+        AND pr.estimated_harvest_quantity <=> CAST(s.prakiraan_jumlah_panen AS DECIMAL(12,3)))) AS baris_berbeda;
 
 --    (b) Setiap nilai distribusi lama (berat/jumlah, KK, orang) per kategori
 --        dibandingkan dengan tabel distributions. Benar bila HASILNYA KOSONG.
@@ -626,294 +630,294 @@ SELECT tabel_lama, kategori, selisih FROM (
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sayur' AND ip.legacy_id = s.`id_sayur`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_kp_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_kp_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
   UNION ALL
   SELECT 'data_sayur' AS tabel_lama, 'STUNTING' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sayur` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sayur' AND ip.legacy_id = s.`id_sayur`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'STUNTING'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_stunting_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_stunting_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
   UNION ALL
   SELECT 'data_sayur' AS tabel_lama, 'MM' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sayur` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sayur' AND ip.legacy_id = s.`id_sayur`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MM'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_mm_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_mm_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
   UNION ALL
   SELECT 'data_sayur' AS tabel_lama, 'LANSIA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sayur` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sayur' AND ip.legacy_id = s.`id_sayur`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LANSIA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_lansia_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_lansia_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
   UNION ALL
   SELECT 'data_sayur' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sayur` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sayur' AND ip.legacy_id = s.`id_sayur`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_posyandu_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_posyandu_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
   UNION ALL
   SELECT 'data_sayur' AS tabel_lama, 'DIJUAL' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sayur` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sayur' AND ip.legacy_id = s.`id_sayur`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dijual_kg` AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
   UNION ALL
   SELECT 'data_buah' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_buah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_buah' AND ip.legacy_id = s.`id_buah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_kp_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_kp_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
   UNION ALL
   SELECT 'data_buah' AS tabel_lama, 'STUNTING' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_buah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_buah' AND ip.legacy_id = s.`id_buah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'STUNTING'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_stunting_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_stunting_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
   UNION ALL
   SELECT 'data_buah' AS tabel_lama, 'MM' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_buah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_buah' AND ip.legacy_id = s.`id_buah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MM'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_mm_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_mm_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
   UNION ALL
   SELECT 'data_buah' AS tabel_lama, 'LANSIA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_buah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_buah' AND ip.legacy_id = s.`id_buah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LANSIA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_lansia_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_lansia_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
   UNION ALL
   SELECT 'data_buah' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_buah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_buah' AND ip.legacy_id = s.`id_buah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_posyandu_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_posyandu_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
   UNION ALL
   SELECT 'data_buah' AS tabel_lama, 'DIJUAL' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_buah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_buah' AND ip.legacy_id = s.`id_buah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dijual_kg` AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
   UNION ALL
   SELECT 'data_tanaman_obat' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_tanaman_obat` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_tanaman_obat' AND ip.legacy_id = s.`id_tanaman_obat`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_kp_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_kp_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
   UNION ALL
   SELECT 'data_tanaman_obat' AS tabel_lama, 'STUNTING' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_tanaman_obat` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_tanaman_obat' AND ip.legacy_id = s.`id_tanaman_obat`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'STUNTING'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_stunting_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_stunting_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
   UNION ALL
   SELECT 'data_tanaman_obat' AS tabel_lama, 'MM' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_tanaman_obat` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_tanaman_obat' AND ip.legacy_id = s.`id_tanaman_obat`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MM'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_mm_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_mm_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
   UNION ALL
   SELECT 'data_tanaman_obat' AS tabel_lama, 'LANSIA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_tanaman_obat` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_tanaman_obat' AND ip.legacy_id = s.`id_tanaman_obat`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LANSIA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_lansia_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_lansia_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
   UNION ALL
   SELECT 'data_tanaman_obat' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_tanaman_obat` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_tanaman_obat' AND ip.legacy_id = s.`id_tanaman_obat`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_posyandu_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_posyandu_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
   UNION ALL
   SELECT 'data_tanaman_obat' AS tabel_lama, 'DIJUAL' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_tanaman_obat` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_tanaman_obat' AND ip.legacy_id = s.`id_tanaman_obat`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dijual_kg` AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
   UNION ALL
   SELECT 'data_ikan' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ikan` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ikan' AND ip.legacy_id = s.`id_ikan`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_kp_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_kp_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
   UNION ALL
   SELECT 'data_ikan' AS tabel_lama, 'STUNTING' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ikan` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ikan' AND ip.legacy_id = s.`id_ikan`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'STUNTING'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_stunting_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_stunting_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
   UNION ALL
   SELECT 'data_ikan' AS tabel_lama, 'MM' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ikan` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ikan' AND ip.legacy_id = s.`id_ikan`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MM'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_mm_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_mm_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
   UNION ALL
   SELECT 'data_ikan' AS tabel_lama, 'LANSIA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ikan` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ikan' AND ip.legacy_id = s.`id_ikan`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LANSIA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_lansia_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_lansia_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
   UNION ALL
   SELECT 'data_ikan' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ikan` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ikan' AND ip.legacy_id = s.`id_ikan`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_posyandu_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_posyandu_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
   UNION ALL
   SELECT 'data_ikan' AS tabel_lama, 'DIJUAL' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ikan` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ikan' AND ip.legacy_id = s.`id_ikan`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dijual_kg` AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
   UNION ALL
   SELECT 'data_ternak' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ternak` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ternak' AND ip.legacy_id = s.`id_ternak`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_kp_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_kp_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
   UNION ALL
   SELECT 'data_ternak' AS tabel_lama, 'STUNTING' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ternak` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ternak' AND ip.legacy_id = s.`id_ternak`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'STUNTING'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_stunting_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_stunting_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
   UNION ALL
   SELECT 'data_ternak' AS tabel_lama, 'MM' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ternak` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ternak' AND ip.legacy_id = s.`id_ternak`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MM'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_mm_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_mm_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
   UNION ALL
   SELECT 'data_ternak' AS tabel_lama, 'LANSIA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ternak` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ternak' AND ip.legacy_id = s.`id_ternak`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LANSIA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_lansia_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_lansia_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
   UNION ALL
   SELECT 'data_ternak' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ternak` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ternak' AND ip.legacy_id = s.`id_ternak`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_posyandu_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_posyandu_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
   UNION ALL
   SELECT 'data_ternak' AS tabel_lama, 'DIJUAL' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_ternak` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_ternak' AND ip.legacy_id = s.`id_ternak`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dijual_kg` AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
   UNION ALL
   SELECT 'data_olahan_hasil' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_olahan_hasil` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_olahan_hasil' AND ip.legacy_id = s.`id_data_olahan_hasil`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_kp_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_kp_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_kp_kk` AND d.person_count <=> s.`jumlah_orang_kp`)
   UNION ALL
   SELECT 'data_olahan_hasil' AS tabel_lama, 'STUNTING' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_olahan_hasil` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_olahan_hasil' AND ip.legacy_id = s.`id_data_olahan_hasil`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'STUNTING'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_stunting_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_stunting_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_stunting` AND d.person_count <=> s.`jumlah_orang_dibagikan_stunting`)
   UNION ALL
   SELECT 'data_olahan_hasil' AS tabel_lama, 'MM' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_olahan_hasil` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_olahan_hasil' AND ip.legacy_id = s.`id_data_olahan_hasil`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MM'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_mm_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_mm_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_mm` AND d.person_count <=> s.`jumlah_orang_dibagikan_mm`)
   UNION ALL
   SELECT 'data_olahan_hasil' AS tabel_lama, 'LANSIA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_olahan_hasil` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_olahan_hasil' AND ip.legacy_id = s.`id_data_olahan_hasil`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LANSIA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_lansia_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_lansia_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_lansia` AND d.person_count <=> s.`jumlah_orang_dibagikan_lansia`)
   UNION ALL
   SELECT 'data_olahan_hasil' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_olahan_hasil` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_olahan_hasil' AND ip.legacy_id = s.`id_data_olahan_hasil`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dibagikan_posyandu_kg` AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dibagikan_posyandu_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_kepala_keluarga_dibagikan_posyandu` AND d.person_count <=> s.`jumlah_orang_dibagikan_posyandu`)
   UNION ALL
   SELECT 'data_olahan_hasil' AS tabel_lama, 'DIJUAL' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_olahan_hasil` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_olahan_hasil' AND ip.legacy_id = s.`id_data_olahan_hasil`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_berat_dijual_kg` AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_berat_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> s.`jumlah_orang_dijual`)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_kp` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_kp` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'MS' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MS'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_ms` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_ms` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'SEKOLAH' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'SEKOLAH'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_sekolah` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_sekolah` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'PKK' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'PKK'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_pkk` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_pkk` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_posyandu` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_posyandu` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'LAINNYA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LAINNYA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_lainnya` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_lainnya` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_bibit' AS tabel_lama, 'DIBAGIKAN_REKAP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_bibit` s
@@ -927,49 +931,49 @@ SELECT tabel_lama, kategori, selisih FROM (
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_bibit' AND ip.legacy_id = s.`id_bibit`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_dijual_pohon` AND d.household_count <=> s.`jumlah_dijual_kk` AND d.person_count <=> s.`jumlah_dijual_orang`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_dijual_pohon` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_dijual_kk` AND d.person_count <=> s.`jumlah_dijual_orang`)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'KP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'KP'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_kp` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_kp` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'MS' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'MS'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_ms` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_ms` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'SEKOLAH' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'SEKOLAH'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_sekolah` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_sekolah` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'PKK' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'PKK'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_pkk` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_pkk` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'POSYANDU' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'POSYANDU'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_posyandu` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_posyandu` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'LAINNYA' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'LAINNYA'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_lainnya` AND d.household_count <=> NULL AND d.person_count <=> NULL)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_lainnya` AS DECIMAL(12,3)) AND d.household_count <=> NULL AND d.person_count <=> NULL)
   UNION ALL
   SELECT 'data_sampah' AS tabel_lama, 'DIBAGIKAN_REKAP' AS kategori, COUNT(*) AS selisih
   FROM `buruansae_lama`.`data_sampah` s
@@ -983,7 +987,7 @@ SELECT tabel_lama, kategori, selisih FROM (
   JOIN `_import_productions` ip ON ip.legacy_table = 'data_sampah' AND ip.legacy_id = s.`id_data_sampah`
   LEFT JOIN `recipient_categories` rc ON rc.code = 'DIJUAL'
   LEFT JOIN `distributions` d ON d.production_id = ip.new_id AND d.recipient_category_id = rc.id
-  WHERE NOT (d.quantity <=> s.`jumlah_dijual_kg` AND d.household_count <=> s.`jumlah_dijual_kk` AND d.person_count <=> s.`jumlah_dijual_orang`)
+  WHERE NOT (d.quantity <=> CAST(s.`jumlah_dijual_kg` AS DECIMAL(12,3)) AND d.household_count <=> s.`jumlah_dijual_kk` AND d.person_count <=> s.`jumlah_dijual_orang`)
 ) x WHERE selisih > 0;
 
 --    (c) Master & rekap

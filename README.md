@@ -144,6 +144,7 @@ Struktur tabel, pemetaan nama kolom lama → baru, dan langkah impor lengkap ada
 Ringkasnya:
 
 ```bash
+mysql -u root buruansae_lama < database/sql/persiapan_data_lama.sql   # di salinan database lama
 php artisan migrate:fresh --seed
 mysql -u root buruansae < database/sql/import_data_lama.sql
 php artisan cache:clear
