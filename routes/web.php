@@ -1,32 +1,28 @@
 <?php
 
+use App\Enums\SectorType;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MapController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\SectorController;
+use App\Http\Controllers\SectorVillageController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+Route::get('/', HomeController::class)->name('home');
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
-Route::prefix('/')->group(function () {
-    Route::get('{sector}', [SectorController::class, 'index'])
-        ->where('sector', 'vegetable|medicalplant|fruit|livestock|fish|waste-processing|nursery');
-});
-Route::get('/processed-products', [SectorController::class, 'olahanHasil']);
+Route::get('/map', MapController::class)->name('map');
 
-Route::get('/', [HomeController::class, 'index']);
-Route::get('/news', [HomeController::class, 'news'])->name('blog.news');
-Route::get('/news/{slug}', [HomeController::class, 'blog'])->name('blog.show');
-
-Route::view('/map', 'home.maps');
+// URL sektor dipertahankan dari aplikasi lama: /vegetable, /fish, /nursery, ...
+Route::prefix('{sector}')
+    ->whereIn('sector', array_column(SectorType::cases(), 'value'))
+    ->name('sectors.')
+    ->group(function () {
+        Route::get('/', [SectorController::class, 'show'])->name('show');
+        Route::get('/kelurahan/{village}/panen', [SectorVillageController::class, 'harvested'])
+            ->name('villages.harvested');
+        Route::get('/kelurahan/{village}/belum-panen', [SectorVillageController::class, 'pending'])
+            ->name('villages.pending');
+    });

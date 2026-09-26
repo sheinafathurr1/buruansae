@@ -1,0 +1,57 @@
+{
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-cyrillic-ext-wght-normal-lLTsRRxN.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
+  },
+  "node_modules/leaflet/dist/images/layers-2x.png": {
+    "file": "assets/layers-2x-Bpkbi35X.png",
+    "src": "node_modules/leaflet/dist/images/layers-2x.png"
+  },
+  "node_modules/leaflet/dist/images/layers.png": {
+    "file": "assets/layers-BWBAp2CZ.png",
+    "src": "node_modules/leaflet/dist/images/layers.png"
+  },
+  "node_modules/leaflet/dist/images/marker-icon.png": {
+    "file": "assets/marker-icon-hN30_KVU.png",
+    "src": "node_modules/leaflet/dist/images/marker-icon.png"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-BR33qyNS.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-B1HY_rfi.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/dashboard.js": {
+    "file": "assets/dashboard-BaBMP4-9.js",
+    "name": "dashboard",
+    "src": "resources/js/dashboard.js",
+    "isEntry": true
+  },
+  "resources/js/map.js": {
+    "file": "assets/map-BA1yW9ZW.js",
+    "name": "map",
+    "src": "resources/js/map.js",
+    "isEntry": true
+  }
+}

@@ -1,61 +1,119 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Buruan SAE — Portal Publik
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+Portal data publik program **Buruan SAE**, urban farming terintegrasi Dinas Ketahanan Pangan dan Pertanian (DKPP) Kota Bandung.
+Versi ini dibangun ulang dari nol dengan **Laravel 12** dan **PHP ≥ 8.3**, memakai struktur database baru (dulu di folder `newdb/`).
 
-## About Laravel
+## Fitur
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Fitur sama dengan aplikasi lama, dengan tampilan baru yang responsif dan aksesibel:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Halaman | URL | Isi |
+|---|---|---|
+| Beranda | `/` | Profil program, angka ringkas (kelompok, kelurahan, hasil panen & penerima manfaat tahun berjalan), 8 sektor, berita terbaru |
+| Dashboard sektor | `/vegetable`, `/medicalplant`, `/fruit`, `/livestock`, `/fish`, `/processed-products`, `/waste-processing`, `/nursery` | Filter komoditas, kecamatan, dan rentang tanggal; total panen; belum panen; terlambat panen; akan panen 7 hari ke depan; grafik & tabel per kecamatan → per kelurahan; rincian per kelompok (modal) termasuk penyaluran hasil |
+| Peta sebaran | `/map` | Peta Leaflet jumlah kelompok per kelurahan, filter kecamatan & pencarian |
+| Berita | `/news`, `/news/{slug}` | Artikel kegiatan kelompok |
+| API peta | `/api/locations` | JSON kelurahan + jumlah kelompok (kunci lama `total_kelompok` tetap ada) |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+URL lama dipertahankan, jadi tautan yang sudah beredar tetap berfungsi. Yang berubah/bertambah:
 
-## Learning Laravel
+- Semua angka dihitung langsung di database (SUM/GROUP BY), bukan memuat seluruh baris ke memori.
+- Tanpa filter kecamatan, rincian ditampilkan **per kecamatan**; klik kecamatan untuk turun ke **per kelurahan**, lalu klik kelurahan untuk rincian kelompok.
+- Kartu **Penyaluran hasil** (konsumsi pribadi / dibagikan / dijual, termasuk jumlah KK & orang penerima) dari tabel `distributions`.
+- Sektor **Olahan Hasil** kini aktif (dulu "Coming soon"), lengkap dengan merek, bahan dasar, izin PIRT, sertifikat halal, dan uji lab.
+- Filter yang tidak valid diabaikan dan pesannya ditampilkan (tidak ada halaman error).
+- Aksesibilitas: lolos audit axe-core (WCAG 2 A/AA) di desktop dan ponsel; grafik punya tampilan tabel; navigasi keyboard & pembaca layar.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Teknologi
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Laravel 12, PHP 8.3+ (lockfile dikunci ke platform PHP 8.3)
+- MariaDB 10.6+ / MySQL 8 (produksi), SQLite (pengujian)
+- Blade + Tailwind CSS 4 + Alpine.js, dibundel dengan Vite
+- Chart.js (grafik), Leaflet + OpenStreetMap (peta), Tom Select (pilihan dengan pencarian)
+- Ikon: Blade Heroicons · Huruf: Plus Jakarta Sans (di-hosting sendiri)
 
-## Laravel Sponsors
+## Menjalankan di komputer lokal
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Prasyarat: PHP 8.3+ (ekstensi `pdo_mysql`, `mbstring`, `gd` tidak wajib), Composer 2, Node.js 20+, MariaDB/MySQL.
 
-### Premium Partners
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[OP.GG](https://op.gg)**
+# Buat database kosong "buruansae", isi DB_* di .env, lalu:
+php artisan migrate --seed          # tabel + data acuan (sektor & kategori penerima)
+php artisan db:seed --class=DemoSeeder   # opsional: data contoh untuk mencoba
 
-## Contributing
+npm install
+npm run dev        # atau: npm run build
+php artisan serve
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> `DemoSeeder` berisi data **buatan** (nama wilayah asli, angka fiktif). Seeder ini menolak berjalan di
+> `APP_ENV=production` atau bila tabel kelompok sudah berisi data.
 
-## Code of Conduct
+## Pengujian
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan test
+```
 
-## Security Vulnerabilities
+38 pengujian (unit + fitur) memakai SQLite in-memory: perhitungan dashboard terhadap data yang totalnya dihitung manual
+(termasuk kelompok yang sudah dihapus & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman,
+API peta, dan header keamanan. Pengujian yang sama juga lolos di MariaDB 10.11.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Deploy ke hosting
 
-## License
+Folder `public/build` (hasil `npm run build`) **ikut di-commit**, jadi server tidak memerlukan Node.js.
+Jalankan ulang `npm run build` dan commit hasilnya setiap kali mengubah tampilan (Blade/CSS/JS).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+composer install --no-dev --optimize-autoloader
+cp .env.example .env     # lalu isi: APP_ENV=production, APP_DEBUG=false, APP_URL, DB_*
+php artisan key:generate
+php artisan migrate --force --seed
+php artisan storage:link
+php artisan optimize        # cache config, route, view
+php artisan icons:cache
+```
+
+- Idealnya document root domain diarahkan ke folder `public/`. Bila hosting memaksa document root di folder proyek,
+  file `.htaccess` di root meneruskan semua permintaan ke `public/` dan menolak akses ke file sensitif.
+- Gambar komoditas dibaca dari `storage/app/public/images/{nama_file}` (sama seperti aplikasi lama `storage/images`).
+  Salin file gambar lama ke folder tersebut.
+- Setelah mengubah `.env` di server, jalankan `php artisan optimize` lagi.
+
+## Memindahkan data dari database lama
+
+Struktur tabel, pemetaan nama kolom lama → baru, dan langkah impor lengkap ada di [`docs/DATABASE.md`](docs/DATABASE.md).
+Ringkasnya:
+
+```bash
+php artisan migrate:fresh --seed
+mysql -u root buruansae < database/sql/import_data_lama.sql
+php artisan cache:clear
+```
+
+## Struktur kode
+
+```
+app/Enums/SectorType.php            8 sektor: slug URL ↔ kode sektor di DB, label, satuan, istilah
+app/Services/SectorDashboard.php    semua angka dashboard sektor (query agregat)
+app/Services/HomeStatistics.php     angka ringkas beranda (di-cache 10 menit)
+app/Http/Requests/SectorDashboardRequest.php  validasi filter (GET, tanpa redirect)
+app/Http/Controllers/…              Home, Sector, SectorVillage (modal), News, Map, Api/Location
+app/Models/…                        12 model struktur database baru
+config/buruansae.php                kontak DKPP & pengaturan peta
+resources/content/news.php          isi berita
+resources/views/…                   Blade (layout, beranda, dashboard sektor, peta, berita, halaman error)
+resources/js/dashboard.js, map.js   grafik Chart.js & peta Leaflet
+database/migrations, seeders, sql   struktur DB baru, data acuan, data contoh, skrip impor data lama
+tests/                              pengujian unit & fitur
+```
+
+## Catatan keamanan
+
+Repository versi lama menyimpan file `.env` beserta kredensial database. File itu kini tidak lagi dilacak Git
+(ada di `.gitignore`), tetapi masih tersimpan di riwayat commit lama — **segera ganti password database** yang pernah
+tercantum di sana.
