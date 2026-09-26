@@ -15,7 +15,7 @@ sehingga data yang diinput di dashboard langsung tampil di portal publik.
 |---|---|---|
 | Beranda | `/` | Profil program, angka ringkas (kelompok, kelurahan, hasil panen & penerima manfaat tahun berjalan), 8 sektor, berita terbaru |
 | Dashboard sektor | `/vegetable`, `/medicalplant`, `/fruit`, `/livestock`, `/fish`, `/processed-products`, `/waste-processing`, `/nursery` | Filter komoditas, kecamatan, dan rentang tanggal; total panen; belum panen; terlambat panen; akan panen 7 hari ke depan; grafik & tabel per kecamatan → per kelurahan; rincian per kelompok (modal) termasuk penyaluran hasil |
-| Peta sebaran | `/map` | Peta Leaflet jumlah kelompok per kelurahan, filter kecamatan & pencarian |
+| Peta sebaran | `/map` | Peta Leaflet jumlah kelompok per kelurahan, filter kecamatan & pencarian. **Gunakan lokasi saya**: kelurahan terdekat yang punya kelompok + jarak, dihitung di browser (lokasi tidak dikirim ke server; perlu HTTPS). `/map?lokasi=saya` langsung mencari |
 | Berita | `/news`, `/news/{slug}` | Artikel kegiatan kelompok |
 | API peta | `/api/locations` | JSON kelurahan + jumlah kelompok (kunci lama `total_kelompok` tetap ada) |
 

@@ -68,7 +68,7 @@
             </ul>
         </nav>
 
-        <a href="{{ route('map') }}" class="btn btn-primary hidden xl:inline-flex">
+        <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="btn btn-primary hidden xl:inline-flex">
             <x-heroicon-o-map-pin class="size-4" aria-hidden="true" /> Cari kelompok terdekat
         </a>
     </div>

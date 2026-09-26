@@ -134,11 +134,16 @@
             <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:22px_22px]"></div>
             <div class="relative max-w-xl">
                 <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Temukan kelompok Buruan SAE di sekitar Anda</h2>
-                <p class="mt-3 text-brand-100">Lihat sebaran kelompok di setiap kelurahan Kota Bandung dan jumlah kelompok yang aktif.</p>
+                <p class="mt-3 text-brand-100">Gunakan lokasi Anda untuk menemukan kelurahan terdekat yang punya kelompok, atau jelajahi sebaran kelompok di seluruh Kota Bandung.</p>
             </div>
-            <a href="{{ route('map') }}" class="btn relative mt-6 bg-white px-5 py-3 text-brand-800 hover:bg-brand-50 focus-visible:outline-white lg:mt-0">
-                <x-heroicon-o-map class="size-5" aria-hidden="true" /> Buka peta sebaran
-            </a>
+            <div class="relative mt-6 flex flex-wrap gap-3 lg:mt-0 lg:shrink-0">
+                <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="btn bg-white px-5 py-3 text-brand-800 hover:bg-brand-50 focus-visible:outline-white">
+                    <x-heroicon-o-map-pin class="size-5" aria-hidden="true" /> Cari dari lokasi saya
+                </a>
+                <a href="{{ route('map') }}" class="btn border border-white/40 px-5 py-3 text-white hover:bg-white/10 focus-visible:outline-white">
+                    <x-heroicon-o-map class="size-5" aria-hidden="true" /> Buka peta sebaran
+                </a>
+            </div>
         </div>
     </section>
 

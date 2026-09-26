@@ -67,6 +67,18 @@ class PublicPagesTest extends TestCase
         $this->get('/map')->assertOk()->assertSee('Peta sebaran kelompok')->assertSee(route('api.locations'), false);
     }
 
+    public function test_map_page_offers_locate_me(): void
+    {
+        $this->get('/map')
+            ->assertOk()
+            ->assertSee('data-locate', false)
+            ->assertSee('Gunakan lokasi saya')
+            // Browser hanya mengizinkan geolocation bila Permissions-Policy membolehkannya untuk situs ini.
+            ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=()');
+
+        $this->get('/')->assertOk()->assertSee(route('map', ['lokasi' => 'saya']), false);
+    }
+
     public function test_security_headers_are_sent(): void
     {
         $this->get('/')

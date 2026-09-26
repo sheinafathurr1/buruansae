@@ -15,6 +15,20 @@
     </section>
 
     <div class="container-page py-6" data-map-explorer="{{ json_encode($mapConfig, JSON_UNESCAPED_SLASHES) }}">
+        {{-- Di atas peta supaya langsung terlihat di layar ponsel. --}}
+        <section class="card mb-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4" aria-label="Cari kelompok terdekat">
+            <button type="button" class="btn btn-primary shrink-0 px-5" data-locate>
+                <x-heroicon-o-map-pin class="size-5" aria-hidden="true" /> <span data-locate-label>Gunakan lokasi saya</span>
+            </button>
+            <div class="min-w-0 flex-1 text-sm">
+                <p class="text-slate-600" data-locate-hint>Temukan kelurahan terdekat yang punya kelompok Buruan SAE. Lokasi Anda hanya diproses di perangkat ini, tidak dikirim atau disimpan.</p>
+                <p class="text-slate-800" data-locate-status role="status"></p>
+                <button type="button" class="mt-1 font-semibold text-brand-700 hover:underline" data-locate-clear hidden>
+                    Urutkan lagi menurut jumlah kelompok
+                </button>
+            </div>
+        </section>
+
         <div class="grid gap-4 lg:grid-cols-[22rem_1fr]">
             <aside class="card order-2 flex flex-col lg:order-1 lg:h-[calc(100vh-12rem)] lg:min-h-[560px]" aria-label="Filter dan daftar kelurahan">
                 <div class="space-y-3 border-b border-slate-100 p-4">
@@ -49,7 +63,7 @@
             <div class="card relative order-1 isolate overflow-hidden lg:order-2">
                 <div data-map class="h-[55vh] min-h-[360px] w-full lg:h-[calc(100vh-12rem)] lg:min-h-[560px]" role="region" aria-label="Peta sebaran kelompok Buruan SAE"></div>
                 <div class="pointer-events-none absolute bottom-3 left-3 z-[400] rounded-xl bg-white/95 px-3 py-2 text-xs text-slate-600 shadow ring-1 ring-slate-200">
-                    <p class="flex items-center gap-2"><span class="inline-block size-3 rounded-full bg-brand-600 ring-2 ring-white" aria-hidden="true"></span> Ada kelompok (angka = jumlah)</p>
+                    <p class="flex items-center gap-2"><span class="inline-block size-3 rounded-full bg-brand-700 ring-2 ring-white" aria-hidden="true"></span> Ada kelompok (angka = jumlah)</p>
                     <p class="mt-1 flex items-center gap-2"><span class="inline-block size-3 rounded-full bg-slate-400 ring-2 ring-white" aria-hidden="true"></span> Belum ada kelompok</p>
                 </div>
             </div>

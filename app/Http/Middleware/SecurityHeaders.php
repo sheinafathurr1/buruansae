@@ -16,7 +16,8 @@ class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+        // geolocation=(self): fitur "Gunakan lokasi saya" di peta; tetap tertutup untuk iframe dari situs lain.
+        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=()');
 
         if ($request->isSecure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
