@@ -43,6 +43,18 @@ final class ImageStore
         return $name;
     }
 
+    /**
+     * URL publik file, atau null bila file tidak ada (sebagian foto lama tidak
+     * ikut tersalin; jangan tampilkan gambar rusak). Dibentuk dari alamat yang
+     * sedang dibuka, bukan APP_URL, jadi tetap benar walau APP_URL di .env keliru.
+     */
+    public static function url(?string $name, string $directory): ?string
+    {
+        $path = $directory.'/'.$name;
+
+        return $name && Storage::disk('public')->exists($path) ? asset('storage/'.$path) : null;
+    }
+
     /** Panggil SETELAH baris pemilik file diubah/dihapus. */
     public static function delete(?string $name, string $directory): void
     {

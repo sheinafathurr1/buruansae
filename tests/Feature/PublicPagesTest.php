@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\SectorType;
+use App\Models\Commodity;
 use App\Models\FarmerGroup;
 use App\Models\Village;
 use App\Services\HomeStatistics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -77,6 +79,36 @@ class PublicPagesTest extends TestCase
             ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=()');
 
         $this->get('/')->assertOk()->assertSee(route('map', ['lokasi' => 'saya']), false);
+    }
+
+    public function test_image_urls_follow_the_visited_address_not_app_url(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('images/1742111697_9f63dfb74c3047bfd3b5.png', 'x');
+        $lele = Commodity::factory()->inSector('SAYUR')->create(['image' => '1742111697_9f63dfb74c3047bfd3b5.png']);
+        $missing = Commodity::factory()->inSector('SAYUR')->create(['image' => 'tidak-ada.png']);
+        config(['app.url' => 'http://localhost']);
+
+        // APP_URL di hosting sering tertinggal "http://localhost"; gambar tetap memakai alamat situs.
+        $this->get("http://portal.test/vegetable?commodity={$lele->id}")
+            ->assertOk()
+            ->assertSee('src="http://portal.test/storage/images/1742111697_9f63dfb74c3047bfd3b5.png"', false);
+        $this->assertNull($missing->image_url);
+    }
+
+    public function test_storage_images_are_served_when_the_symlink_is_missing(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('images/panen/1782462719_9f5b9698f714581ea13b.jpg', 'foto');
+
+        $response = $this->get('/storage/images/panen/1782462719_9f5b9698f714581ea13b.jpg')->assertOk();
+        $this->assertSame('foto', $response->streamedContent());
+        $this->assertStringContainsString('max-age=2592000', $response->headers->get('Cache-Control'));
+        $this->assertSame([], $response->headers->getCookies(), 'gambar tidak perlu sesi/cookie');
+
+        $this->get('/storage/images/panen/tidak-ada.jpg')->assertNotFound();
+        $this->get('/storage/images/panen/../../../.env')->assertNotFound();
+        $this->get('/storage/images/skrip.php')->assertNotFound();
     }
 
     public function test_security_headers_are_sent(): void

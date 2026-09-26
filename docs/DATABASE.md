@@ -148,8 +148,11 @@ Foto yang disalin dari aplikasi lama (1.126 file, 139 MB) sudah dirapikan di rep
   tidak ditampilkan (bukan gambar rusak).
 - **Git:** `storage/app/public/.gitignore` hanya memasukkan file bernama gaya lama (`1742111697_9f63….png`).
   Unggahan baru dari dashboard (nama acak 32 karakter) tidak ikut git, jadi tidak tertimpa atau terhapus saat deploy.
-- `public/storage` harus berupa **symlink** hasil `php artisan storage:link`, bukan folder biasa. Bila di server
-  sudah terlanjur ada folder `public/storage`, hapus dulu foldernya, lalu jalankan `php artisan storage:link`.
+- `public/storage` sebaiknya berupa **symlink** hasil `php artisan storage:link`, bukan folder biasa (bila sudah
+  terlanjur ada folder `public/storage`, hapus dulu). Kalau hosting tidak mengizinkan symlink (fungsi `symlink()`
+  dimatikan), gambar tetap tampil: route `storage/images/{path}` menyajikannya dari `storage/app/public/images/`.
+- URL gambar mengikuti alamat situs yang sedang dibuka, bukan `APP_URL`, jadi gambar tidak rusak walau `APP_URL`
+  di `.env` hosting keliru.
 
 Id kecamatan, kelurahan, kelompok, komoditas, rekap, dan user dipertahankan; id produksi dibuat baru. Menjalankan
 ulang skrip akan gagal dengan "Duplicate entry" (bukan menggandakan data). Untuk mengulang: `migrate:fresh --seed`

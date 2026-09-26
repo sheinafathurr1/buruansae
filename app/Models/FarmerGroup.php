@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ImageStore;
 use App\Support\PublicDataCache;
 use Database\Factories\FarmerGroupFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -10,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
 /** Kelompok */
 class FarmerGroup extends Model
@@ -65,6 +65,6 @@ class FarmerGroup extends Model
 
     private function photoUrl(?string $file): ?string
     {
-        return $file ? Storage::disk('public')->url(self::PHOTO_DIRECTORY.'/'.$file) : null;
+        return ImageStore::url($file, self::PHOTO_DIRECTORY);
     }
 }
