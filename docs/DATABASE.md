@@ -116,7 +116,10 @@ Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
    mengembalikan baris sama sekali.
 5. **Setel ulang password** (lihat di bawah), lalu `php artisan cache:clear` supaya angka beranda & peta diperbarui.
 6. **Unggah ke hosting:** export database `buruansae`, import ke database hosting.
-7. **Pindahkan file gambar** komoditas ke `storage/app/public/images/` dan jalankan `php artisan storage:link`.
+7. **Pindahkan file gambar** (kolom database hanya menyimpan nama file), lalu jalankan `php artisan storage:link`:
+   - gambar komoditas → `storage/app/public/images/`
+   - foto hasil panen (aplikasi CodeIgniter menyimpannya di `public/asset/`) → `storage/app/public/images/panen/`
+   - foto lahan & ketua kelompok → `storage/app/public/images/kelompok/`
 
 Id kecamatan, kelurahan, kelompok, komoditas, rekap, dan user dipertahankan; id produksi dibuat baru. Menjalankan
 ulang skrip akan gagal dengan "Duplicate entry" (bukan menggandakan data). Untuk mengulang: `migrate:fresh --seed`
@@ -125,21 +128,20 @@ lalu impor lagi.
 ### Password lama tidak bisa dipakai
 
 Myth/Auth menyimpan `bcrypt(base64(sha384(password)))`, sedangkan Laravel memakai `bcrypt(password)`. Hash lama tetap
-disalin, tetapi login dengan password lama akan gagal. Portal publik ini belum memakai login, jadi cukup setel ulang
-bila nanti dibutuhkan:
+disalin, tetapi login ke dashboard dengan password lama akan gagal. Setel ulang tiap akun:
 
 ```bash
-php artisan tinker
->>> App\Models\User::where('username', 'namauser')->first()->update(['password' => 'PasswordBaruYangKuat']);
+php artisan buruansae:user namauser        # kata sandi baru ditanyakan
 ```
-
-Cast `'password' => 'hashed'` di model `User` meng-hash otomatis.
 
 ## Hal yang masih perlu diputuskan
 
 - **Aturan tanggal.** CHECK `harvest_date >= start_date` di migration `productions` masih dikomentari karena data lama
   punya ±114 baris panen sebelum tanam. Aktifkan setelah data itu dibetulkan.
 - **Data uji** di database lama (mis. `data_sampah` id 1 yang semua nilainya 1) sebaiknya dihapus sebelum impor.
-- **Panel admin / login.** Aplikasi ini (seperti versi lama) hanya portal publik dan belum punya fitur input data.
-  Bila aplikasi input yang lama masih menulis ke tabel lama, data baru perlu dipindahkan ulang atau aplikasi input
-  disesuaikan dengan struktur baru. Kolom `username` & `is_active` sudah tersedia di `users` bila kelak dibutuhkan.
+- **Hak akses.** Semua akun aktif di dashboard `/admin` punya akses yang sama (seperti aplikasi CodeIgniter lama).
+  Bila perlu membedakan admin dan penyuluh, pasang `spatie/laravel-permission`.
+- **Masa transisi.** Selama aplikasi CodeIgniter lama masih dipakai, data yang diinput di sana masuk ke tabel lama.
+  Hentikan input di aplikasi lama sebelum impor terakhir, lalu gunakan dashboard `/admin` ini.
+- **Wilayah.** Kecamatan & kelurahan (termasuk koordinat peta) berasal dari impor data lama; dashboard belum punya
+  menu untuk mengubahnya.

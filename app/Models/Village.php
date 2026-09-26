@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PublicDataCache;
 use Database\Factories\VillageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,12 @@ class Village extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => PublicDataCache::flush());
+        static::deleted(fn () => PublicDataCache::flush());
     }
 
     public function district(): BelongsTo

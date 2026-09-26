@@ -58,14 +58,10 @@ class SectorVillageController extends Controller
 
     private function paginate($ids, array $orderColumns, SectorType $sector, bool $ascending = false): LengthAwarePaginator
     {
-        $relations = ['farmerGroup:id,name,rw', 'commodity:id,name,growing_days', 'distributions.recipientCategory'];
-
-        if ($sector === SectorType::ProcessedProduct) {
-            $relations[] = 'processedProductDetail';
-        }
-        if ($sector === SectorType::Nursery) {
-            $relations[] = 'seedlingDetail';
-        }
+        $relations = [
+            'farmerGroup:id,name,rw', 'commodity:id,name,growing_days', 'distributions.recipientCategory',
+            'processedProductDetail', 'seedlingDetail',
+        ];
 
         $query = Production::query()->whereIn('id', $ids)->with($relations);
         foreach ($orderColumns as $column) {

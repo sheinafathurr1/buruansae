@@ -3,19 +3,26 @@
 namespace App\Models;
 
 use App\Enums\PlantingCategory;
+use App\Support\PublicDataCache;
 use Database\Factories\ProductionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /** Satu siklus produksi (semua sektor) */
 class Production extends Model
 {
     /** @use HasFactory<ProductionFactory> */
     use HasFactory;
+
+    /** Folder foto hasil panen di disk "public". */
+    public const IMAGE_DIRECTORY = 'images/panen';
 
     protected $fillable = [
         'farmer_group_id', 'commodity_id', 'planting_category', 'start_date', 'initial_quantity',
@@ -36,6 +43,12 @@ class Production extends Model
             'harvest_head_count' => 'decimal:2',
             'selling_price' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => PublicDataCache::flush());
+        static::deleted(fn () => PublicDataCache::flush());
     }
 
     public function farmerGroup(): BelongsTo
@@ -78,6 +91,25 @@ class Production extends Model
     public function scopeHarvestedBetween(Builder $query, string $from, string $to): void
     {
         $query->whereBetween('harvest_date', [$from, $to]);
+    }
+
+    /** 'harvested' (sudah panen), 'late' (terlambat panen), atau 'pending' (belum panen). */
+    public function status(?Carbon $today = null): string
+    {
+        if ($this->harvest_date !== null) {
+            return 'harvested';
+        }
+
+        $today ??= Carbon::today();
+
+        return $this->estimated_harvest_date?->lt($today) ? 'late' : 'pending';
+    }
+
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->image
+            ? Storage::disk('public')->url(self::IMAGE_DIRECTORY.'/'.$this->image)
+            : null);
     }
 
     /** Belum dipanen (tanggal panen belum diisi). */

@@ -1,5 +1,5 @@
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from 'chart.js';
-import TomSelect from 'tom-select';
+import { initSearchableSelects } from './searchable-select';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
@@ -110,13 +110,4 @@ function initAreaChart(canvas) {
 
 document.querySelectorAll('[data-area-chart]').forEach(initAreaChart);
 
-document.querySelectorAll('select[data-searchable]').forEach((select) => {
-    new TomSelect(select, {
-        allowEmptyOption: true,
-        maxOptions: null,
-        create: false,
-        render: {
-            no_results: () => '<div class="no-results">Tidak ditemukan</div>',
-        },
-    });
-});
+initSearchableSelects();

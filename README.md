@@ -1,11 +1,15 @@
-# Buruan SAE — Portal Publik
+# Buruan SAE — Portal Publik & Dashboard Pengelola
 
-Portal data publik program **Buruan SAE**, urban farming terintegrasi Dinas Ketahanan Pangan dan Pertanian (DKPP) Kota Bandung.
-Versi ini dibangun ulang dari nol dengan **Laravel 12** dan **PHP ≥ 8.3**, memakai struktur database baru (dulu di folder `newdb/`).
+Aplikasi program **Buruan SAE**, urban farming terintegrasi Dinas Ketahanan Pangan dan Pertanian (DKPP) Kota Bandung.
+Satu aplikasi **Laravel 12** (PHP ≥ 8.3) berisi:
 
-## Fitur
+- **Portal publik** — pengganti aplikasi Laravel 8 lama di repo ini.
+- **Dashboard pengelola** (`/admin`) — pengganti aplikasi CodeIgniter 4 `caatis-coe/buruansae-dashboard`.
 
-Fitur sama dengan aplikasi lama, dengan tampilan baru yang responsif dan aksesibel:
+Keduanya memakai struktur database baru (dulu di folder `newdb/`, lihat [`docs/DATABASE.md`](docs/DATABASE.md)),
+sehingga data yang diinput di dashboard langsung tampil di portal publik.
+
+## Portal publik
 
 | Halaman | URL | Isi |
 |---|---|---|
@@ -22,7 +26,44 @@ URL lama dipertahankan, jadi tautan yang sudah beredar tetap berfungsi. Yang ber
 - Kartu **Penyaluran hasil** (konsumsi pribadi / dibagikan / dijual, termasuk jumlah KK & orang penerima) dari tabel `distributions`.
 - Sektor **Olahan Hasil** kini aktif (dulu "Coming soon"), lengkap dengan merek, bahan dasar, izin PIRT, sertifikat halal, dan uji lab.
 - Filter yang tidak valid diabaikan dan pesannya ditampilkan (tidak ada halaman error).
-- Aksesibilitas: lolos audit axe-core (WCAG 2 A/AA) di desktop dan ponsel; grafik punya tampilan tabel; navigasi keyboard & pembaca layar.
+
+## Dashboard pengelola (`/admin`)
+
+Fitur sama dengan aplikasi CodeIgniter `buruansae-dashboard`, disesuaikan dengan struktur database baru:
+
+| Menu | URL | Isi |
+|---|---|---|
+| Masuk / keluar | `/admin/masuk` | Login dengan username **atau** email |
+| Ringkasan | `/admin` | Angka ringkas, kartu input per sektor (berjalan / terlambat / panen bulan ini), daftar siklus yang perlu dicatat panennya |
+| Data produksi | `/admin/produksi/{sektor}` | Per sektor (8 sektor, termasuk Pembibitan): daftar dengan tab Semua / Belum panen / Terlambat / Sudah panen, pencarian kelompok, filter komoditas & kecamatan |
+| Tambah / ubah data tanam | `…/tambah`, `…/{id}/ubah` | Kelompok (dengan info penyuluh, pendamping, kelurahan), komoditas, kategori tanam, jumlah, perkiraan panen. **Perkiraan tanggal panen dihitung otomatis** dari tanggal tanam + durasi tanam komoditas. Ikan/ternak: pakan. Olahan hasil: bahan dasar, merek, resep, PIRT, halal, uji lab. Pembibitan: asal bibit |
+| Data panen / produksi | `…/{id}/panen` | Tanggal panen, foto hasil, penyaluran per kategori (jumlah, KK, orang), harga jual. **Jumlah panen = total konsumsi pribadi + dibagikan + dijual** (sama dengan perubahan terakhir di aplikasi lama). Ikan/ternak: jumlah ekor. Buah: pemupukan |
+| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, ketua, kontak, penyuluh, pendamping, lahan, status keaktifan, foto lahan & ketua |
+| Komoditas | `/admin/komoditas` | Tambah/ubah/hapus komoditas per sektor dengan durasi tanam dan gambar (gambar tampil di portal publik) |
+| Profil | `/admin/profil` | Ubah nama, email, dan kata sandi sendiri |
+
+Perbedaan dari aplikasi CodeIgniter:
+
+- **Keamanan login**: dibatasi 5 percobaan per menit per akun (+20 per menit per IP), akun bisa dinonaktifkan, tidak ada
+  pendaftaran akun publik. Akun dibuat lewat perintah `buruansae:user` (lihat bawah).
+- **Hapus kelompok** kini *soft delete*: data produksinya tetap tersimpan tetapi tidak lagi dihitung di portal
+  (dulu seluruh data produksi kelompok ikut terhapus permanen).
+- **Komoditas yang sudah dipakai** tidak bisa dihapus atau dipindah sektor.
+- **Foto** boleh sampai 8 MB; foto dari ponsel otomatis diperkecil ke lebar 1.600 px.
+- Olahan Hasil & Pengolahan Sampah memakai form penyaluran yang sama dengan sektor lain (sesuai data produksi di
+  database), bukan kolom lama seperti "lokasi pembeli".
+- Tampilan responsif (daftar berubah menjadi kartu di ponsel) dan lolos audit aksesibilitas axe-core.
+
+### Membuat akun pengelola
+
+```bash
+php artisan buruansae:user admin --email=admin@bandung.go.id --name="Admin DKPP"   # akun baru (kata sandi ditanyakan)
+php artisan buruansae:user admin                                                   # setel ulang kata sandi
+php artisan buruansae:user penyuluh1 --deactivate                                  # nonaktifkan (--activate untuk mengaktifkan)
+```
+
+Kata sandi minimal 8 karakter berisi huruf dan angka. Akun hasil impor data lama wajib disetel ulang kata sandinya
+karena format hash Myth/Auth berbeda (lihat `docs/DATABASE.md`).
 
 ## Teknologi
 
@@ -34,7 +75,8 @@ URL lama dipertahankan, jadi tautan yang sudah beredar tetap berfungsi. Yang ber
 
 ## Menjalankan di komputer lokal
 
-Prasyarat: PHP 8.3+ (ekstensi `pdo_mysql`, `mbstring`, `gd` tidak wajib), Composer 2, Node.js 20+, MariaDB/MySQL.
+Prasyarat: PHP 8.3+ (ekstensi `pdo_mysql`, `mbstring`; `gd` untuk memperkecil foto), Composer 2, MariaDB/MySQL.
+Node.js 20+ hanya perlu bila mengubah tampilan.
 
 ```bash
 composer install
@@ -42,13 +84,18 @@ cp .env.example .env
 php artisan key:generate
 
 # Buat database kosong "buruansae", isi DB_* di .env, lalu:
-php artisan migrate --seed          # tabel + data acuan (sektor & kategori penerima)
+php artisan migrate --seed               # tabel + data acuan (sektor & kategori penerima)
 php artisan db:seed --class=DemoSeeder   # opsional: data contoh untuk mencoba
+php artisan storage:link                 # agar foto unggahan bisa ditampilkan
+php artisan buruansae:user admin --email=admin@example.com
 
-npm install
-npm run dev        # atau: npm run build
 php artisan serve
 ```
+
+Buka `http://localhost:8000` (portal) dan `http://localhost:8000/admin` (dashboard).
+
+Hasil build tampilan (`public/build`) sudah ada di repo, jadi `npm` tidak wajib. Bila mengubah Blade/CSS/JS,
+jalankan `npm install` lalu `npm run dev` (selama mengembangkan) atau `npm run build` (sebelum commit).
 
 > `DemoSeeder` berisi data **buatan** (nama wilayah asli, angka fiktif). Seeder ini menolak berjalan di
 > `APP_ENV=production` atau bila tabel kelompok sudah berisi data.
@@ -59,9 +106,15 @@ php artisan serve
 php artisan test
 ```
 
-38 pengujian (unit + fitur) memakai SQLite in-memory: perhitungan dashboard terhadap data yang totalnya dihitung manual
-(termasuk kelompok yang sudah dihapus & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman,
-API peta, dan header keamanan. Pengujian yang sama juga lolos di MariaDB 10.11.
+63 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
+
+- **Portal**: perhitungan dashboard terhadap data yang totalnya dihitung manual (termasuk kelompok yang sudah dihapus
+  & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman, API peta, header keamanan.
+- **Dashboard**: login (username/email, akun nonaktif, pembatasan percobaan), CRUD kelompok & komoditas (termasuk foto),
+  input tanam per sektor, input panen (total = jumlah penyaluran, validasi tanggal/foto/harga), hapus data, dan
+  pengosongan cache portal setelah data berubah.
+
+Pengujian yang sama juga lolos di MariaDB 10.11.
 
 ## Deploy ke hosting
 
@@ -74,14 +127,15 @@ cp .env.example .env     # lalu isi: APP_ENV=production, APP_DEBUG=false, APP_UR
 php artisan key:generate
 php artisan migrate --force --seed
 php artisan storage:link
+php artisan buruansae:user admin --email=...   # akun pengelola pertama
 php artisan optimize        # cache config, route, view
 php artisan icons:cache
 ```
 
 - Idealnya document root domain diarahkan ke folder `public/`. Bila hosting memaksa document root di folder proyek,
   file `.htaccess` di root meneruskan semua permintaan ke `public/` dan menolak akses ke file sensitif.
-- Gambar komoditas dibaca dari `storage/app/public/images/{nama_file}` (sama seperti aplikasi lama `storage/images`).
-  Salin file gambar lama ke folder tersebut.
+- File unggahan disimpan di `storage/app/public/images/`: `panen/` (foto hasil panen), `kelompok/` (foto lahan & ketua),
+  dan langsung di `images/` (gambar komoditas, sama seperti aplikasi lama `storage/images`).
 - Setelah mengubah `.env` di server, jalankan `php artisan optimize` lagi.
 
 ## Memindahkan data dari database lama
@@ -98,22 +152,29 @@ php artisan cache:clear
 ## Struktur kode
 
 ```
-app/Enums/SectorType.php            8 sektor: slug URL ↔ kode sektor di DB, label, satuan, istilah
-app/Services/SectorDashboard.php    semua angka dashboard sektor (query agregat)
-app/Services/HomeStatistics.php     angka ringkas beranda (di-cache 10 menit)
-app/Http/Requests/SectorDashboardRequest.php  validasi filter (GET, tanpa redirect)
-app/Http/Controllers/…              Home, Sector, SectorVillage (modal), News, Map, Api/Location
-app/Models/…                        12 model struktur database baru
+app/Enums/SectorType.php            8 sektor: slug URL ↔ kode sektor di DB, label, satuan, isian form per sektor
+app/Services/SectorDashboard.php    angka dashboard sektor publik (query agregat)
+app/Services/HomeStatistics.php     angka ringkas beranda (di-cache, dikosongkan otomatis saat data berubah)
+app/Services/ProductionRecorder.php simpan data tanam, panen & penyaluran, hapus (dashboard pengelola)
+app/Http/Controllers/…              portal publik (Home, Sector, SectorVillage, News, Map, Api/Location)
+app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, Profile)
+app/Http/Requests/…                 validasi form (filter publik, login, form dashboard)
+app/Console/Commands/ManageUser.php perintah buruansae:user
+app/Support/…                       format angka/tanggal, penyimpanan foto, cache portal
+routes/web.php, admin.php, api.php  rute portal, dashboard (/admin), dan API
 config/buruansae.php                kontak DKPP & pengaturan peta
 resources/content/news.php          isi berita
-resources/views/…                   Blade (layout, beranda, dashboard sektor, peta, berita, halaman error)
-resources/js/dashboard.js, map.js   grafik Chart.js & peta Leaflet
+resources/views/…                   Blade: portal publik, admin/, components/ (layout, form, dll.)
+resources/js/…                      app.js (Alpine), dashboard.js (Chart.js), map.js (Leaflet), admin.js
 database/migrations, seeders, sql   struktur DB baru, data acuan, data contoh, skrip impor data lama
-tests/                              pengujian unit & fitur
+tests/                              pengujian unit & fitur (portal dan dashboard)
 ```
 
 ## Catatan keamanan
 
-Repository versi lama menyimpan file `.env` beserta kredensial database. File itu kini tidak lagi dilacak Git
-(ada di `.gitignore`), tetapi masih tersimpan di riwayat commit lama — **segera ganti password database** yang pernah
-tercantum di sana.
+- Repository versi lama menyimpan file `.env` beserta kredensial database. File itu kini tidak lagi dilacak Git
+  (ada di `.gitignore`), tetapi masih tersimpan di riwayat commit lama — **segera ganti password database** yang pernah
+  tercantum di sana.
+- Repository `buruansae-dashboard` lama menyimpan dump database (`db_buruansae.sql`) dan berkas `pwlogin.txt`.
+  Setelah dashboard ini dipakai, sebaiknya repository itu dijadikan privat/diarsipkan dan kata sandi yang pernah
+  tersimpan di sana diganti.

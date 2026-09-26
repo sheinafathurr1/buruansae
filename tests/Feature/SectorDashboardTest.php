@@ -26,8 +26,6 @@ class SectorDashboardTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seed = true;
-
     private District $districtA;
 
     private District $districtB;

@@ -26,6 +26,7 @@
                 <li><a href="{{ route('home') }}" class="text-brand-100/80 hover:text-white">Beranda</a></li>
                 <li><a href="{{ route('map') }}" class="text-brand-100/80 hover:text-white">Peta sebaran kelompok</a></li>
                 <li><a href="{{ route('news.index') }}" class="text-brand-100/80 hover:text-white">Berita &amp; artikel</a></li>
+                <li><a href="{{ route('login') }}" class="text-brand-100/80 hover:text-white" rel="nofollow">Masuk pengelola</a></li>
             </ul>
         </div>
 

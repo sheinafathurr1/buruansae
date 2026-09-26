@@ -101,6 +101,17 @@
         @apply mb-1.5 block text-sm font-semibold text-slate-700;
     }
 
+    /* Tombol naik-turun bawaan input angka menutupi satuan (kg, ekor); ketik langsung saja. */
+    input[type='number'].form-control {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    input[type='number'].form-control::-webkit-inner-spin-button,
+    input[type='number'].form-control::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
     .form-control {
         @apply block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 focus:outline-none;
     }
@@ -123,6 +134,34 @@
 
     .table-base tbody td {
         @apply border-t border-slate-100 px-4 py-3 align-top text-slate-700;
+    }
+
+    /* Tabel admin: di layar kecil setiap baris menjadi kartu bertumpuk (label dari data-label). */
+    @media (max-width: 767px) {
+        .table-stack thead {
+            @apply sr-only;
+        }
+        .table-stack,
+        .table-stack tbody,
+        .table-stack tr,
+        .table-stack td {
+            display: block;
+            width: 100%;
+        }
+        .table-stack tbody tr {
+            @apply border-t border-slate-100 px-4 py-3 first:border-t-0;
+        }
+        .table-stack tbody td {
+            @apply border-0 px-0 py-1;
+            text-align: left !important;
+        }
+        .table-stack td[data-label]::before {
+            content: attr(data-label);
+            @apply block text-[11px] font-semibold tracking-wide text-slate-500 uppercase;
+        }
+        .table-stack td.table-actions {
+            @apply flex flex-wrap gap-1 pt-2;
+        }
     }
 
     .num {

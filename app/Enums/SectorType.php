@@ -118,4 +118,67 @@ enum SectorType: string
     {
         return in_array($this, [self::Fish, self::Livestock], true);
     }
+
+    /** Pemberian pakan (ikan, ternak). */
+    public function tracksFeed(): bool
+    {
+        return in_array($this, [self::Fish, self::Livestock], true);
+    }
+
+    /** Pemupukan (buah). */
+    public function tracksFertilizer(): bool
+    {
+        return $this === self::Fruit;
+    }
+
+    /** Pilihan kategori tanam (benih/bibit/pohon); kosong = tidak dipakai sektor ini. */
+    public function plantingCategories(): array
+    {
+        return match ($this) {
+            self::Vegetable, self::MedicinalPlant => [PlantingCategory::Seed, PlantingCategory::Seedling],
+            self::Fruit => PlantingCategory::cases(),
+            default => [],
+        };
+    }
+
+    /** Label komoditas pada form input, mis. "Jenis ikan". */
+    public function commodityLabel(): string
+    {
+        return match ($this) {
+            self::Vegetable => 'Sayur',
+            self::MedicinalPlant => 'Tanaman obat',
+            self::Fruit => 'Buah',
+            self::Livestock => 'Jenis ternak',
+            self::Fish => 'Jenis ikan',
+            self::ProcessedProduct => 'Jenis olahan',
+            self::WasteProcessing => 'Jenis pengolahan',
+            self::Nursery => 'Jenis bibit',
+        };
+    }
+
+    /** Label productions.initial_quantity pada form input. */
+    public function initialQuantityLabel(): ?string
+    {
+        return match ($this) {
+            self::Fish => 'Jumlah ikan',
+            self::Livestock => 'Jumlah ternak',
+            self::Nursery => 'Jumlah semai',
+            self::WasteProcessing => 'Jumlah sampah',
+            self::ProcessedProduct => null,
+            default => 'Jumlah tanam',
+        };
+    }
+
+    /**
+     * Kategori penerima yang diisi pada form panen (kode recipient_categories).
+     * Bibit & sampah memakai kategori yang sama dengan data lamanya.
+     *
+     * @return list<string>
+     */
+    public function recipientCategoryCodes(): array
+    {
+        return in_array($this, [self::Nursery, self::WasteProcessing], true)
+            ? ['KP', 'MS', 'SEKOLAH', 'PKK', 'POSYANDU', 'LAINNYA', 'DIJUAL']
+            : ['KP', 'STUNTING', 'MM', 'LANSIA', 'POSYANDU', 'DIJUAL'];
+    }
 }

@@ -14,8 +14,6 @@ class PublicPagesTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seed = true;
-
     public function test_home_page_lists_all_sectors_and_statistics(): void
     {
         FarmerGroup::factory()->count(2)->create();

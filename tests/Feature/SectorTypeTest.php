@@ -11,8 +11,6 @@ class SectorTypeTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seed = true;
-
     public function test_every_sector_page_maps_to_a_seeded_sector(): void
     {
         foreach (SectorType::cases() as $type) {
