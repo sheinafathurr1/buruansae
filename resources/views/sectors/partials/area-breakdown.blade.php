@@ -23,11 +23,11 @@
     $total = $rows->sum('total');
     $id = 'breakdown-'.$kind;
 @endphp
-<section class="card flex min-w-0 flex-col" aria-labelledby="{{ $id }}-title" x-data="{ view: 'chart' }">
-    <header class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 p-5">
-        <div class="min-w-0">
-            <h2 id="{{ $id }}-title" class="text-base font-bold text-slate-900">{{ $title }}</h2>
-            <p class="mt-0.5 text-sm text-slate-500">
+<section class="panel flex min-w-0 flex-col" aria-labelledby="{{ $id }}-title" x-data="{ view: 'chart' }">
+    <header class="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 border-b border-rule px-5 pt-5">
+        <div class="min-w-0 pb-4">
+            <h2 id="{{ $id }}-title" class="display text-xl leading-snug">{{ $title }}</h2>
+            <p class="mt-0.5 text-sm text-ink-muted">
                 @if ($rows->isEmpty())
                     Tidak ada data.
                 @elseif ($drill === 'district')
@@ -38,16 +38,16 @@
             </p>
         </div>
         @if ($rows->isNotEmpty())
-            <div class="flex rounded-xl bg-slate-100 p-1 text-xs font-semibold" role="tablist" aria-label="Tampilan data">
+            <div class="-mb-px flex gap-4 text-sm" role="tablist" aria-label="Tampilan data">
                 <button type="button" role="tab" id="{{ $id }}-tab-chart" aria-controls="{{ $id }}-chart" :aria-selected="(view === 'chart').toString()" aria-selected="true"
-                        @click="view = 'chart'" :class="view === 'chart' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-slate-900 shadow-sm">
-                    <x-heroicon-m-chart-bar class="size-4" aria-hidden="true" /> Grafik
+                        @click="view = 'chart'" :class="view === 'chart' ? 'border-brand-800 font-semibold text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
+                        class="border-b-[3px] border-brand-800 pb-3 font-semibold text-ink">
+                    Grafik
                 </button>
                 <button type="button" role="tab" id="{{ $id }}-tab-table" aria-controls="{{ $id }}-table" :aria-selected="(view === 'table').toString()" aria-selected="false"
-                        @click="view = 'table'" :class="view === 'table' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
-                        class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-slate-600">
-                    <x-heroicon-m-table-cells class="size-4" aria-hidden="true" /> Tabel
+                        @click="view = 'table'" :class="view === 'table' ? 'border-brand-800 font-semibold text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
+                        class="border-b-[3px] border-transparent pb-3 text-ink-muted">
+                    Tabel
                 </button>
             </div>
         @endif
@@ -62,9 +62,9 @@
                         aria-label="Grafik batang {{ strtolower($title) }}. Tertinggi {{ display_name($top->name) }}: {{ format_quantity($top->total, $unit) }}. Total {{ format_quantity($total, $unit) }}. Lihat tab Tabel untuk semua angka."></canvas>
             </div>
         </div>
-        <div id="{{ $id }}-table" role="tabpanel" aria-labelledby="{{ $id }}-tab-table" x-show="view === 'table'" x-cloak class="max-h-[32rem] overflow-auto" tabindex="0">
-            <table class="table-base">
-                <thead class="sticky top-0">
+        <div id="{{ $id }}-table" role="tabpanel" aria-labelledby="{{ $id }}-tab-table" x-show="view === 'table'" x-cloak class="max-h-[32rem] overflow-auto px-5" tabindex="0">
+            <table class="data-table">
+                <thead class="sticky top-0 bg-white">
                     <tr>
                         <th scope="col" class="w-10">#</th>
                         <th scope="col">{{ $drill === 'district' ? 'Kecamatan' : 'Kelurahan' }}</th>
@@ -75,18 +75,18 @@
                 </thead>
                 <tbody>
                     @foreach ($rows as $row)
-                        <tr class="hover:bg-slate-50">
-                            <td class="num text-slate-400">{{ $loop->iteration }}</td>
-                            <td class="font-medium text-slate-900">{{ display_name($row->name) }}</td>
+                        <tr class="hover:bg-paper">
+                            <td class="num text-ink-muted">{{ $loop->iteration }}</td>
+                            <td class="font-medium">{{ display_name($row->name) }}</td>
                             <td class="num text-right font-semibold">{{ format_number($row->total) }}</td>
                             <td class="num text-right">{{ format_number($row->cycles, 0) }}</td>
                             <td class="text-right whitespace-nowrap">
                                 @if ($drill === 'district')
-                                    <a href="{{ $rowUrl($row) }}" class="text-sm font-semibold text-brand-700 hover:underline">
+                                    <a href="{{ $rowUrl($row) }}" class="link text-sm">
                                         Per kelurahan<span class="sr-only"> di Kecamatan {{ display_name($row->name) }}</span>
                                     </a>
                                 @else
-                                    <a href="{{ $rowUrl($row) }}" class="text-sm font-semibold text-brand-700 hover:underline"
+                                    <a href="{{ $rowUrl($row) }}" class="link text-sm"
                                        @click.prevent="$dispatch('open-detail', { url: @js($rowUrl($row)), title: @js($detailTitle.' — Kel. '.display_name($row->name)) })">
                                         Rincian<span class="sr-only"> Kelurahan {{ display_name($row->name) }}</span>
                                     </a>
@@ -96,11 +96,11 @@
                     @endforeach
                 </tbody>
                 <tfoot>
-                    <tr class="bg-slate-50 font-semibold text-slate-900">
+                    <tr class="border-t border-ink/70 font-semibold text-ink">
                         <td></td>
-                        <td class="px-4 py-3">Total</td>
-                        <td class="num px-4 py-3 text-right">{{ format_number($total) }}</td>
-                        <td class="num px-4 py-3 text-right">{{ format_number($rows->sum('cycles'), 0) }}</td>
+                        <td class="px-3 py-3">Total</td>
+                        <td class="num px-3 py-3 text-right">{{ format_number($total) }}</td>
+                        <td class="num px-3 py-3 text-right">{{ format_number($rows->sum('cycles'), 0) }}</td>
                         <td></td>
                     </tr>
                 </tfoot>

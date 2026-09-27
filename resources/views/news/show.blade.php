@@ -1,30 +1,33 @@
 <x-layouts.app :title="$article->title" :description="$article->excerpt(155)" :image="$article->image">
-    <article>
-        <header class="border-b border-slate-200 bg-white">
-            <div class="container-page max-w-4xl py-8 lg:py-12">
-                <x-breadcrumb :items="[['Beranda', route('home')], ['Berita', route('news.index')], ['Detail berita', null]]" />
-                <h1 class="mt-6 text-2xl leading-tight font-extrabold tracking-tight text-slate-900 sm:text-4xl">{{ $article->title }}</h1>
-                <p class="mt-4 text-sm text-slate-500">Buruan SAE · {{ config('buruansae.agency_short') }}</p>
-            </div>
+    <article class="container-page max-w-3xl pt-8 lg:pt-10">
+        <header>
+            <x-breadcrumb :items="[['Beranda', route('home')], ['Berita', route('news.index')], ['Detail berita', null]]" />
+            <h1 class="display mt-6 text-3xl leading-tight sm:text-[2.5rem]">{{ $article->title }}</h1>
+            <p class="mt-4 border-b border-rule pb-6 text-sm text-ink-muted">Buruan SAE · {{ config('buruansae.agency') }}</p>
         </header>
 
-        <div class="container-page max-w-4xl py-8 lg:py-10">
-            <img src="{{ asset($article->image) }}" alt="Dokumentasi: {{ $article->title }}" class="aspect-[16/9] w-full rounded-3xl object-cover shadow-lg ring-1 ring-slate-900/5">
-            <div class="prose-article mt-8">
-                @foreach ($article->paragraphs as $paragraph)
-                    <p>{{ $paragraph }}</p>
-                @endforeach
-            </div>
-            <a href="{{ route('news.index') }}" class="btn btn-secondary mt-4">
-                <x-heroicon-m-arrow-left class="size-4" aria-hidden="true" /> Kembali ke daftar berita
-            </a>
+        <figure class="mt-8">
+            <img src="{{ asset($article->image) }}" alt="Dokumentasi kegiatan: {{ $article->title }}" class="aspect-[16/9] w-full rounded-sm object-cover">
+            <figcaption class="mt-2 text-sm text-ink-muted">Dokumentasi {{ config('buruansae.agency_short') }}.</figcaption>
+        </figure>
+
+        <div class="prose-article mt-8">
+            @foreach ($article->paragraphs as $paragraph)
+                <p>{{ $paragraph }}</p>
+            @endforeach
         </div>
+
+        <p class="mt-2 border-t border-rule pt-6">
+            <a href="{{ route('news.index') }}" class="link">Kembali ke daftar berita</a>
+        </p>
     </article>
 
     @if ($related->isNotEmpty())
-        <section aria-labelledby="lainnya-title" class="container-page pb-4">
-            <h2 id="lainnya-title" class="section-title">Berita lainnya</h2>
-            <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-labelledby="lainnya-title" class="container-page max-w-3xl pt-14">
+            <div class="section-head">
+                <h2 id="lainnya-title">Berita lainnya</h2>
+            </div>
+            <div class="mt-6">
                 @foreach ($related as $item)
                     <x-news-card :article="$item" />
                 @endforeach

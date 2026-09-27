@@ -29,30 +29,27 @@
 <x-layouts.app :title="$sector->label()" :description="'Data '.$sector->label().' Buruan SAE: hasil '.$termLower.', perkiraan '.$termLower.', dan penyaluran hasil per kecamatan dan kelurahan di Kota Bandung.'" :scripts="['resources/js/dashboard.js']" :image="$sector->image()">
 
     {{-- Kepala halaman --}}
-    <section class="border-b border-slate-200 bg-white">
-        <div class="container-page pt-6 pb-5 lg:pt-8">
+    <section class="border-b border-rule">
+        <div class="container-page pt-6 lg:pt-8">
             <x-breadcrumb :items="[['Beranda', route('home')], ['Data sektor', route('home').'#sektor'], [$sector->label(), null]]" />
 
             <div class="mt-5 flex items-center gap-4 sm:gap-5">
-                <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-white p-2 ring-1 ring-brand-100 sm:size-20">
-                    <img src="{{ asset($sector->image()) }}" alt="" class="max-h-full max-w-full object-contain">
-                </span>
+                <img src="{{ asset($sector->image()) }}" alt="" class="size-16 shrink-0 object-contain sm:size-20">
                 <div class="min-w-0">
-                    <p class="eyebrow">Dashboard sektor</p>
-                    <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{{ $sector->label() }}</h1>
-                    <p class="mt-1 max-w-2xl text-sm text-slate-600 sm:text-base">{{ $sector->description() }}</p>
+                    <h1 class="display text-3xl leading-tight sm:text-4xl">{{ $sector->label() }}</h1>
+                    <p class="mt-1 max-w-2xl text-ink-soft">{{ $sector->description() }}</p>
                 </div>
             </div>
 
             <nav aria-label="Sektor lain" class="-mx-4 mt-6 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
-                <ul class="flex w-max gap-2">
+                <ul class="flex w-max gap-5 text-[15px]">
                     @foreach (SectorType::cases() as $case)
                         <li>
                             <a href="{{ route('sectors.show', $case) }}" @if($case === $sector) aria-current="page" @endif
                                @class([
-                                   'inline-flex items-center rounded-full px-3.5 py-1.5 text-sm font-semibold transition',
-                                   'bg-brand-700 text-white shadow-sm' => $case === $sector,
-                                   'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900' => $case !== $sector,
+                                   'inline-block border-b-[3px] pb-3 transition-colors',
+                                   'border-brand-800 font-semibold text-ink' => $case === $sector,
+                                   'border-transparent text-ink-muted hover:border-rule hover:text-ink' => $case !== $sector,
                                ])>{{ $case->label() }}</a>
                         </li>
                     @endforeach
@@ -61,22 +58,22 @@
         </div>
     </section>
 
-    <div class="container-page space-y-6 py-6 lg:py-8">
+    <div class="container-page space-y-8 py-6 lg:py-8">
 
         {{-- Filter --}}
-        <form method="GET" action="{{ route('sectors.show', $sector) }}" class="card p-4 sm:p-5" aria-labelledby="filter-title" x-data="{ open: @js($filtersOpen) }">
+        <form method="GET" action="{{ route('sectors.show', $sector) }}" class="panel p-4 sm:p-5" aria-labelledby="filter-title" x-data="{ open: @js($filtersOpen) }">
             <h2 id="filter-title" class="sr-only">Filter data</h2>
 
             {{-- Di ponsel filter dilipat supaya data langsung terlihat. --}}
             <button type="button" data-js-only @click="open = !open" :aria-expanded="open.toString()" aria-expanded="{{ $filtersOpen ? 'true' : 'false' }}" aria-controls="filter-fields"
-                    class="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-slate-800 sm:hidden">
+                    class="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-ink sm:hidden">
                 <span class="inline-flex items-center gap-2">
-                    <x-heroicon-o-funnel class="size-5 text-brand-700" aria-hidden="true" /> Filter data
+                    <x-heroicon-o-funnel class="size-5 text-brand-800" aria-hidden="true" /> Filter data
                     @if ($activeFilterCount > 0)
-                        <span class="rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-800 ring-1 ring-brand-200">{{ $activeFilterCount }} aktif</span>
+                        <span class="text-xs font-normal text-ink-muted">({{ $activeFilterCount }} aktif)</span>
                     @endif
                 </span>
-                <x-heroicon-m-chevron-down class="size-5 text-slate-500 transition" ::class="open && 'rotate-180'" aria-hidden="true" />
+                <x-heroicon-m-chevron-down class="size-5 text-ink-muted transition" ::class="open && 'rotate-180'" aria-hidden="true" />
             </button>
 
             <div id="filter-fields" data-mobile-collapsible @class(['max-sm:mt-4', 'max-sm:hidden' => ! $filtersOpen]) :class="open ? 'max-sm:block!' : 'max-sm:hidden'">
@@ -110,35 +107,33 @@
                            @if($filterErrors->has('end_date')) aria-invalid="true" aria-describedby="end_date-error" @endif>
                 </div>
                 <div class="flex gap-2 sm:col-span-2 lg:col-span-1">
-                    <button type="submit" class="btn btn-primary flex-1 lg:flex-none">
-                        <x-heroicon-o-funnel class="size-4" aria-hidden="true" /> Terapkan
-                    </button>
+                    <button type="submit" class="button button-primary flex-1 lg:flex-none">Terapkan</button>
                     @if ($filters->isFiltered())
-                        <a href="{{ route('sectors.show', $sector) }}" class="btn btn-secondary" title="Hapus semua filter">
+                        <a href="{{ route('sectors.show', $sector) }}" class="button button-outline" title="Hapus semua filter">
                             <x-heroicon-o-arrow-path class="size-4" aria-hidden="true" /><span class="lg:sr-only">Atur ulang</span>
                         </a>
                     @endif
                 </div>
             </div>
 
-            <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4 text-sm">
-                <span class="mr-1 text-slate-500">Rentang cepat:</span>
+            <p class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-rule pt-4 text-sm">
+                <span class="text-ink-muted">Rentang cepat:</span>
                 @foreach ($presets as $label => [$from, $to])
                     @php($isActive = $filters->startDate?->toDateString() === $from?->toDateString() && $filters->endDate?->toDateString() === $to?->toDateString())
                     <a href="{{ $sectorUrl(['start_date' => $from?->toDateString(), 'end_date' => $to?->toDateString()]) }}"
                        @if($isActive) aria-current="true" @endif
                        @class([
-                           'rounded-full px-3 py-1 font-medium ring-1 transition',
-                           'bg-brand-50 text-brand-800 ring-brand-200' => $isActive,
-                           'text-slate-600 ring-slate-200 hover:bg-slate-50' => ! $isActive,
+                           'underline-offset-4 transition-colors',
+                           'font-semibold text-ink underline decoration-brand-800 decoration-2' => $isActive,
+                           'text-ink-soft hover:text-ink hover:underline' => ! $isActive,
                        ])>{{ $label }}</a>
                 @endforeach
-            </div>
+            </p>
             </div>
         </form>
 
         @if ($filterErrors->any())
-            <div class="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+            <div class="flex gap-3 border-l-4 border-amber-600 bg-amber-50 p-4 text-sm text-amber-950" role="alert">
                 <x-heroicon-o-exclamation-circle class="size-5 shrink-0" aria-hidden="true" />
                 <div>
                     <p class="font-semibold">Sebagian filter tidak dipakai karena tidak valid:</p>
@@ -153,53 +148,47 @@
 
         {{-- Ringkasan --}}
         <section aria-labelledby="ringkasan-title">
-            <h2 id="ringkasan-title" class="sr-only">Ringkasan</h2>
-            <p class="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600">
-                <span class="font-semibold text-slate-800">{{ $commodityLabel }}</span>
-                <span aria-hidden="true">·</span><span>{{ $scopeLabel }}</span>
-                <span aria-hidden="true">·</span><span>{{ $periodLabel }}</span>
-            </p>
+            <div class="section-head flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                <h2 id="ringkasan-title">{{ $commodityLabel }}</h2>
+                <p class="text-sm text-ink-muted">{{ $scopeLabel }} · {{ $periodLabel }}</p>
+            </div>
 
-            <div @class(['grid gap-4', 'lg:grid-cols-5' => $sector->tracksHarvestEstimate(), 'lg:grid-cols-2' => ! $sector->tracksHarvestEstimate()])>
+            <div @class(['mt-6 grid gap-8', 'lg:grid-cols-[1.35fr_1fr_1fr_1fr] lg:gap-0 lg:divide-x lg:divide-rule' => $sector->tracksHarvestEstimate(), 'lg:grid-cols-2 lg:gap-12' => ! $sector->tracksHarvestEstimate()])>
                 {{-- Angka utama --}}
-                <div @class(['card relative overflow-hidden p-6', 'lg:col-span-2' => $sector->tracksHarvestEstimate()])>
-                    <div aria-hidden="true" class="pointer-events-none absolute -right-10 -bottom-12 size-48 rounded-full bg-brand-50"></div>
-                    <div class="relative flex items-start justify-between gap-4">
-                        <div class="min-w-0">
-                            <p class="text-sm font-semibold text-slate-600">Total hasil {{ $termLower }}</p>
-                            <p class="mt-2 text-5xl font-extrabold tracking-tight text-slate-900">
-                                {{ format_number($summary['harvest']['quantity']) }}<span class="ml-2 text-xl font-bold text-slate-500">{{ $unit }}</span>
-                            </p>
-                            <p class="mt-3 text-sm text-slate-600">
-                                dari {{ format_number($summary['harvest']['cycles'], 0) }} siklus oleh {{ format_number($summary['harvest']['groups'], 0) }} kelompok
-                                @if ($sector->tracksHeadCount() && $summary['harvest']['heads'] > 0)
-                                    · {{ format_number($summary['harvest']['heads'], 0) }} ekor
-                                @endif
-                            </p>
-                            <p class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-100">
-                                <x-heroicon-m-check-circle class="size-4" aria-hidden="true" /> Sudah {{ $term === 'Produksi' ? 'diproduksi' : 'dipanen' }}
-                            </p>
-                        </div>
-                        @if ($selectedCommodity?->image_url)
-                            <img src="{{ $selectedCommodity->image_url }}" alt="{{ display_name($selectedCommodity->name) }}" class="relative size-24 shrink-0 rounded-2xl object-cover ring-1 ring-slate-200 sm:size-28">
-                        @endif
+                <div @class(['flex items-start justify-between gap-4', 'lg:pr-8' => $sector->tracksHarvestEstimate()])>
+                    <div class="min-w-0">
+                        <p class="text-[15px] font-semibold text-ink">Total hasil {{ $termLower }}</p>
+                        <p class="figure-number mt-1 text-5xl text-ink sm:text-6xl">
+                            {{ format_number($summary['harvest']['quantity']) }}<span class="ml-2 font-body text-lg font-semibold tracking-normal text-ink-muted">{{ $unit }}</span>
+                        </p>
+                        <p class="mt-2 text-sm text-ink-soft">
+                            {{ $term === 'Produksi' ? 'Sudah diproduksi' : 'Sudah dipanen' }}: {{ format_number($summary['harvest']['cycles'], 0) }} siklus oleh {{ format_number($summary['harvest']['groups'], 0) }} kelompok
+                            @if ($sector->tracksHeadCount() && $summary['harvest']['heads'] > 0)
+                                · {{ format_number($summary['harvest']['heads'], 0) }} ekor
+                            @endif
+                        </p>
                     </div>
+                    @if ($selectedCommodity?->image_url)
+                        <img src="{{ $selectedCommodity->image_url }}" alt="{{ display_name($selectedCommodity->name) }}" class="size-24 shrink-0 rounded-sm object-cover sm:size-28">
+                    @endif
                 </div>
 
                 @if ($sector->tracksHarvestEstimate())
-                    <x-stat-tile :label="'Belum '.$termLower" :value="format_number($summary['pending']['estimate'])" :unit="$unit" icon="clock" tone="info" badge="Dalam proses">
-                        Perkiraan hasil dari {{ format_number($summary['pending']['cycles'], 0) }} siklus
-                        @if ($sector->initialQuantityUnit() && $summary['pending']['initial'] > 0)
-                            ({{ format_quantity($summary['pending']['initial'], $sector->initialQuantityUnit(), 0) }})
-                        @endif
-                    </x-stat-tile>
-                    <x-stat-tile label="Terlambat panen" :value="format_number($summary['late']['estimate'])" :unit="$unit" icon="exclamation-triangle" tone="critical" badge="Perlu perhatian">
-                        {{ format_number($summary['late']['cycles'], 0) }} siklus melewati perkiraan tanggal panen
-                    </x-stat-tile>
-                    <x-stat-tile :label="'Panen '.SectorDashboard::UPCOMING_DAYS.' hari ke depan'" :value="format_number($summary['upcoming']['estimate'])" :unit="$unit" icon="calendar-days" tone="neutral"
-                                 :badge="'s.d. '.format_date(today()->addDays(SectorDashboard::UPCOMING_DAYS))">
-                        {{ format_number($summary['upcoming']['cycles'], 0) }} siklus diperkirakan siap panen
-                    </x-stat-tile>
+                    <dl class="contents">
+                        @foreach ([
+                            ['Belum '.$termLower, $summary['pending'], 'perkiraan dari '.format_number($summary['pending']['cycles'], 0).' siklus'.($sector->initialQuantityUnit() && $summary['pending']['initial'] > 0 ? ' ('.format_quantity($summary['pending']['initial'], $sector->initialQuantityUnit(), 0).')' : ''), false],
+                            ['Terlambat panen', $summary['late'], format_number($summary['late']['cycles'], 0).' siklus melewati perkiraan tanggal panen', $summary['late']['cycles'] > 0],
+                            ['Panen '.SectorDashboard::UPCOMING_DAYS.' hari ke depan', $summary['upcoming'], format_number($summary['upcoming']['cycles'], 0).' siklus, s.d. '.format_date(today()->addDays(SectorDashboard::UPCOMING_DAYS)), false],
+                        ] as [$label, $figure, $note, $alert])
+                            <div class="flex flex-col border-t border-rule pt-4 lg:border-t-0 lg:px-6 lg:pt-0 lg:last:pr-0">
+                                <dt class="order-1 text-[15px] font-semibold text-ink">{{ $label }}</dt>
+                                <dd @class(['figure-number order-2 mt-1 text-3xl sm:text-4xl', 'text-soil' => $alert, 'text-ink' => ! $alert])>
+                                    {{ format_number($figure['estimate']) }}<span class="ml-1.5 font-body text-base font-semibold tracking-normal text-ink-muted">{{ $unit }}</span>
+                                </dd>
+                                <dd class="order-3 mt-1 text-sm text-ink-muted">{{ $note }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
                 @else
                     @include('sectors.partials.distribution', ['compact' => true])
                 @endif
@@ -213,8 +202,8 @@
                 'kind' => 'harvested',
                 'title' => 'Hasil '.$termLower.' per '.$areaNoun,
                 'datasetLabel' => 'Hasil '.$termLower,
-                'color' => '#1f8a4c',
-                'hoverColor' => '#1a6f3e',
+                'color' => '#2d6a3e',
+                'hoverColor' => '#1f4d2c',
                 'emptyTitle' => 'Belum ada data '.$termLower,
                 'emptyText' => 'Tidak ada hasil '.$termLower.' yang tercatat untuk filter ini.',
             ])
@@ -225,8 +214,8 @@
                     'kind' => 'pending',
                     'title' => 'Perkiraan belum panen per '.$areaNoun,
                     'datasetLabel' => 'Perkiraan belum panen',
-                    'color' => '#2a78d6',
-                    'hoverColor' => '#1c5cab',
+                    'color' => '#4a78a8',
+                    'hoverColor' => '#365d86',
                     'emptyTitle' => 'Tidak ada yang menunggu panen',
                     'emptyText' => 'Semua siklus pada filter ini sudah dipanen.',
                 ])
@@ -258,8 +247,7 @@
             @include('sectors.partials.distribution', ['compact' => false])
         @endif
 
-        <p class="flex items-start gap-2 text-xs leading-5 text-slate-600">
-            <x-heroicon-o-information-circle class="size-4 shrink-0" aria-hidden="true" />
+        <p class="border-t border-rule pt-4 text-xs leading-5 text-ink-muted">
             Sumber data: laporan kelompok Buruan SAE yang dihimpun {{ config('buruansae.agency_short') }}. Satuan hasil sektor ini: {{ $unit }}.
             Kelompok yang sudah tidak terdaftar tidak ikut dihitung.
         </p>

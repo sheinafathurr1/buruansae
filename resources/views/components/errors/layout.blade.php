@@ -1,12 +1,12 @@
 @props(['code', 'title', 'message'])
 <x-layouts.app :title="$title">
-    <section class="container-page flex flex-col items-center py-20 text-center lg:py-28">
-        <p class="text-6xl font-extrabold tracking-tight text-brand-600 sm:text-7xl">{{ $code }}</p>
-        <h1 class="mt-4 text-2xl font-extrabold text-slate-900 sm:text-3xl">{{ $title }}</h1>
-        <p class="mt-3 max-w-md text-base text-slate-600">{{ $message }}</p>
-        <div class="mt-8 flex flex-wrap justify-center gap-3">
-            <a href="{{ route('home') }}" class="btn btn-primary"><x-heroicon-o-home class="size-4" aria-hidden="true" /> Ke beranda</a>
-            <a href="{{ route('map') }}" class="btn btn-secondary"><x-heroicon-o-map class="size-4" aria-hidden="true" /> Peta sebaran</a>
-        </div>
+    <section class="container-page max-w-3xl py-20 lg:py-28">
+        <p class="figure-number text-7xl text-brand-800 sm:text-8xl">{{ $code }}</p>
+        <h1 class="display mt-4 border-t border-ink pt-4 text-3xl leading-tight sm:text-4xl">{{ $title }}</h1>
+        <p class="mt-3 max-w-md text-ink-soft">{{ $message }}</p>
+        <p class="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+            <a href="{{ route('home') }}" class="button button-primary">Ke beranda</a>
+            <a href="{{ route('map') }}" class="link self-center">Peta sebaran kelompok</a>
+        </p>
     </section>
 </x-layouts.app>

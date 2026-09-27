@@ -14,6 +14,17 @@ return [
     ],
 
     /*
+    | Foto pembuka beranda. Artikel terkaitnya tidak diulang di daftar berita
+    | beranda, dan keterangan fotonya menautkan ke artikel itu.
+    */
+    'hero' => [
+        'image' => 'images/news/WhatsApp-Image-2022-06-23-at-15.55.44-1-770x428.jpeg',
+        'alt' => 'Deretan tanaman dalam pot di bawah atap paranet biru, di sepanjang gang permukiman',
+        'caption' => 'Kebun kelompok Buruan SAE Sajuta Saratus di gang RW 04, Kelurahan Cipaganti, Kecamatan Coblong.',
+        'article' => 'buruan-sae-sajuta-saratus',
+    ],
+
+    /*
     | Peta sebaran: pusat, zoom, dan batas wilayah Kota Bandung. Kelurahan dengan
     | koordinat di luar batas "locations_bounds" tidak dikirim oleh /api/locations
     | (sama dengan aplikasi lama).

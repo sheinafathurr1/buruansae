@@ -1,170 +1,175 @@
 <x-layouts.app>
-    {{-- Hero --}}
-    <section class="relative overflow-hidden bg-gradient-to-b from-brand-50 via-white to-surface">
-        <div aria-hidden="true" class="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-brand-100/60 blur-3xl"></div>
-        <div class="container-page relative grid items-center gap-10 pt-10 pb-24 lg:grid-cols-2 lg:gap-14 lg:pt-16 lg:pb-32">
-            <div>
-                <p class="eyebrow inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 ring-1 ring-brand-100">
-                    <span class="size-1.5 rounded-full bg-sae-500" aria-hidden="true"></span>
-                    Program {{ config('buruansae.agency_short') }}
+    {{-- Pembuka --}}
+    <section class="border-b border-rule">
+        <div class="container-page grid gap-8 py-10 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-16">
+            <div class="lg:col-span-5">
+                <h1 class="display text-[2.75rem] leading-[1.02] sm:text-6xl lg:text-[4.25rem]">Buruan SAE</h1>
+                <p class="mt-3 font-serif text-lg text-ink-soft italic sm:text-xl">
+                    <span lang="su">Buruan</span> berarti pekarangan. SAE: Sehat, Alami, Ekonomis.
                 </p>
-                <h1 class="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                    Buruan <span class="text-sae-500">SAE</span>
-                </h1>
-                <p class="mt-3 text-xl font-bold text-brand-800 sm:text-2xl">Urban farming yang terintegrasi</p>
-                <p class="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                    Memanfaatkan pekarangan dan lahan di sekitar rumah untuk memenuhi kebutuhan pangan keluarga
-                    yang sehat, alami, dan ekonomis. Pantau hasil panen dan penyalurannya di setiap kecamatan Kota Bandung.
+                <p class="mt-6 max-w-xl text-[1.0625rem] leading-8 text-ink-soft">
+                    Program urban farming Pemerintah Kota Bandung. Warga menanam sayur, memelihara ternak, dan
+                    membudidayakan ikan di pekarangan untuk pangan keluarga. Di sini tercatat hasil panen dan
+                    penyalurannya dari setiap kelompok, per kecamatan dan kelurahan.
                 </p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="#sektor" class="btn btn-primary px-5 py-3">
-                        <x-heroicon-o-chart-bar class="size-5" aria-hidden="true" /> Lihat data sektor
-                    </a>
-                    <a href="{{ route('map') }}" class="btn btn-secondary px-5 py-3">
-                        <x-heroicon-o-map class="size-5" aria-hidden="true" /> Peta sebaran kelompok
-                    </a>
+                <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+                    <a href="#sektor" class="button button-primary px-5 py-3">Lihat data panen</a>
+                    <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="link text-[15px]">Cari kelompok di sekitar Anda</a>
                 </div>
             </div>
-            <div class="relative">
-                <picture>
-                    <source type="image/webp" srcset="{{ asset('images/hero/farm-960.webp') }} 960w, {{ asset('images/hero/farm.webp') }} 1920w" sizes="(min-width: 1024px) 600px, 100vw">
-                    <img src="{{ asset('images/hero/farm.jpg') }}" alt="Ilustrasi warga berkebun dan beternak di pekarangan rumah"
-                         width="1920" height="967" fetchpriority="high"
-                         class="w-full rounded-3xl shadow-2xl ring-1 shadow-brand-900/10 ring-slate-900/5">
-                </picture>
-            </div>
+            <figure class="lg:col-span-7">
+                <img src="{{ asset($hero['image']) }}" width="770" height="428" fetchpriority="high" alt="{{ $hero['alt'] }}"
+                     class="aspect-[16/10] w-full rounded-sm object-cover">
+                <figcaption class="mt-2.5 text-sm text-ink-muted">
+                    {{ $hero['caption'] }}
+                    @if ($heroArticle)
+                        <a href="{{ route('news.show', $heroArticle->slug) }}" class="link font-medium whitespace-nowrap">Baca kisahnya</a>
+                    @endif
+                </figcaption>
+            </figure>
         </div>
     </section>
 
-    {{-- Angka ringkas --}}
-    <section aria-labelledby="angka-title" class="container-page relative z-10 -mt-14 lg:-mt-20">
-        <h2 id="angka-title" class="sr-only">Buruan SAE dalam angka</h2>
-        <ul class="card grid grid-cols-2 divide-slate-100 p-2 max-lg:gap-y-2 lg:grid-cols-4 lg:divide-x">
+    {{-- Angka --}}
+    <section aria-labelledby="angka-title" class="container-page pt-12 lg:pt-14">
+        <div class="section-head flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+            <h2 id="angka-title">Buruan SAE dalam angka</h2>
+            @if ($stats['since_year'] && $stats['last_harvest_date'])
+                <p class="text-sm text-ink-muted">
+                    Data {{ $stats['since_year'] }}–{{ substr($stats['last_harvest_date'], 0, 4) }} · panen terakhir tercatat {{ format_date($stats['last_harvest_date']) }}
+                </p>
+            @endif
+        </div>
+        <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4 lg:gap-x-0 lg:divide-x lg:divide-rule">
             @foreach ([
-                ['Kelompok Buruan SAE', format_number($stats['groups'], 0), format_number($stats['active_groups'], 0).' terkonfirmasi aktif', 'user-group'],
-                ['Kelurahan terjangkau', format_number($stats['villages'], 0), 'di '.format_number($stats['districts'], 0).' kecamatan', 'map-pin'],
-                ['Hasil panen '.$stats['year'], format_number($stats['harvest_kg_this_year'], 0), 'kilogram, seluruh sektor', 'scale'],
-                ['Warga penerima '.$stats['year'], format_number($stats['beneficiaries_this_year'], 0), 'orang menerima hasil yang dibagikan', 'heart'],
-            ] as [$label, $value, $hint, $icon])
-                <li class="flex items-start gap-3 rounded-xl p-4 lg:p-5">
-                    <span class="hidden size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 sm:flex">
-                        <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-5" aria-hidden="true" />
-                    </span>
-                    <div class="min-w-0">
-                        <p class="text-xs font-semibold text-slate-500 sm:text-sm">{{ $label }}</p>
-                        <p class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{{ $value }}</p>
-                        <p class="mt-0.5 text-xs text-slate-500">{{ $hint }}</p>
+                ['Kelompok terdaftar', format_number($stats['groups'], 0), format_number($stats['active_groups'], 0).' terkonfirmasi aktif'],
+                ['Kelurahan', format_number($stats['villages'], 0), 'tersebar di '.format_number($stats['districts'], 0).' kecamatan'],
+                ['Hasil panen tercatat', format_number($stats['harvest_kg_total'] / 1000, 1).' ton', 'sektor bersatuan kilogram'],
+                ['Penerima hasil yang dibagikan', format_number($stats['beneficiaries_total'], 0), 'orang, dijumlahkan per penyaluran'],
+            ] as [$label, $value, $note])
+                <div class="flex flex-col lg:px-6 lg:first:pl-0 lg:last:pr-0">
+                    <dt class="order-2 mt-2 text-[15px] font-semibold text-ink">{{ $label }}</dt>
+                    <dd class="figure-number order-1 text-4xl text-ink sm:text-5xl">{{ $value }}</dd>
+                    <dd class="order-3 mt-0.5 text-sm text-ink-muted">{{ $note }}</dd>
+                </div>
+            @endforeach
+        </dl>
+    </section>
+
+    {{-- Tentang --}}
+    <section aria-labelledby="program-title" class="container-page grid gap-10 pt-16 lg:grid-cols-12 lg:gap-12 lg:pt-20">
+        <div class="lg:col-span-6">
+            <div class="section-head">
+                <h2 id="program-title">Pekarangan sebagai sumber pangan</h2>
+            </div>
+            <div class="mt-5 space-y-4 text-[1.0625rem] leading-8 text-ink-soft">
+                <p>
+                    Buruan SAE digagas {{ config('buruansae.agency') }} untuk mengatasi ketimpangan persoalan pangan
+                    di Kota Bandung. Pekarangan dan lahan yang ada dimanfaatkan untuk berkebun, beternak, dan budidaya ikan
+                    guna memenuhi kebutuhan pangan keluarga.
+                </p>
+                <p>
+                    Melalui program ini Pemerintah Kota Bandung berharap masyarakat dapat belajar memproduksi bahan pangannya
+                    sendiri, sehingga makanan yang dikonsumsi menjadi lebih sehat, alami, serta ekonomis.
+                </p>
+            </div>
+        </div>
+        <ul class="border-t border-ink lg:col-span-6">
+            @foreach ([
+                ['S', 'Sehat', 'Bahan pangan dikelola langsung oleh masyarakat, sehingga prosesnya terjaga dan tidak banyak memakai pestisida kimia.'],
+                ['A', 'Alami', 'Hasil langsung dari alam dan diolah dengan pupuk serta pestisida alami.'],
+                ['E', 'Ekonomis', 'Hasil panen bisa dikonsumsi sendiri, dibagikan, atau dijual dalam jumlah kecil.'],
+            ] as [$letter, $title, $text])
+                <li class="grid grid-cols-[3.25rem_1fr] gap-x-4 border-b border-rule py-5">
+                    <span class="figure-number text-5xl leading-none text-brand-800" aria-hidden="true">{{ $letter }}</span>
+                    <div>
+                        <h3 class="text-base font-semibold text-ink">{{ $title }}</h3>
+                        <p class="mt-1 text-[15px] leading-7 text-ink-soft">{{ $text }}</p>
                     </div>
                 </li>
             @endforeach
         </ul>
     </section>
 
-    {{-- Tentang --}}
-    <section id="tentang" class="container-page grid gap-10 py-16 lg:grid-cols-12 lg:py-24">
-        <div class="lg:col-span-5">
-            <p class="eyebrow">Tentang program</p>
-            <h2 class="section-title mt-3">Apa itu Buruan SAE?</h2>
-            <p class="mt-5 text-base leading-7 text-slate-600">
-                Buruan SAE adalah program urban farming terintegrasi yang digagas {{ config('buruansae.agency') }}
-                untuk mengatasi ketimpangan persoalan pangan di Kota Bandung, dengan memanfaatkan pekarangan atau lahan
-                yang ada melalui kegiatan berkebun, beternak, dan budidaya ikan guna memenuhi kebutuhan pangan keluarga.
-            </p>
-            <p class="mt-4 text-base leading-7 text-slate-600">
-                Melalui program ini Pemerintah Kota Bandung berharap masyarakat dapat belajar memproduksi bahan pangannya
-                sendiri, sehingga makanan yang dikonsumsi menjadi lebih sehat, alami, serta ekonomis.
-            </p>
+    {{-- Sektor --}}
+    <section id="sektor" aria-labelledby="sektor-title" class="container-page pt-16 lg:pt-20">
+        <div class="section-head flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+            <h2 id="sektor-title">Data panen per sektor</h2>
+            <p class="text-sm text-ink-muted">Hasil panen, perkiraan panen, dan penyaluran hasil di setiap kecamatan dan kelurahan.</p>
         </div>
-        <div class="lg:col-span-7">
-            <ul class="grid gap-4 sm:grid-cols-3 lg:gap-5">
-                @foreach ([
-                    ['Sehat', 'Bahan pangan dikelola langsung oleh masyarakat sehingga prosesnya terjaga dan tidak banyak menggunakan pestisida kimia.', 'heart', 'bg-sae-50 text-sae-600'],
-                    ['Alami', 'Produk langsung dari alam dan diolah dengan media pupuk serta pestisida alami.', 'sparkles', 'bg-brand-50 text-brand-700'],
-                    ['Ekonomis', 'Menghasilkan bahan pangan yang bisa dikonsumsi sendiri atau dijual dalam jumlah mikro.', 'banknotes', 'bg-amber-50 text-amber-700'],
-                ] as [$title, $text, $icon, $tone])
-                    <li class="card p-6">
-                        <span class="flex size-12 items-center justify-center rounded-2xl {{ $tone }}">
-                            <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-6" aria-hidden="true" />
+        <ul class="grid lg:grid-cols-2 lg:gap-x-12">
+            @foreach ($sectors as $sector)
+                @php($count = $stats['sectors'][$sector->value])
+                <li class="border-b border-rule">
+                    <a href="{{ route('sectors.show', $sector) }}" class="group grid grid-cols-[3rem_1fr_auto] items-center gap-x-4 py-4 sm:grid-cols-[3.5rem_1fr_auto]">
+                        <img src="{{ asset($sector->image()) }}" alt="" loading="lazy" class="size-12 object-contain sm:size-14">
+                        <span class="min-w-0">
+                            <span class="block font-serif text-xl font-semibold text-ink decoration-1 underline-offset-4 group-hover:text-brand-800 group-hover:underline">{{ $sector->label() }}</span>
+                            <span class="mt-0.5 line-clamp-2 text-sm text-ink-muted lg:line-clamp-1">{{ $sector->description() }}</span>
                         </span>
-                        <h3 class="mt-5 text-lg font-extrabold tracking-wide text-slate-900 uppercase">{{ $title }}</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">{{ $text }}</p>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
+                        <span class="num text-right text-sm leading-5">
+                            @if ($count['groups'] > 0)
+                                <span class="block text-ink">{{ format_number($count['groups'], 0) }} kelompok</span>
+                                <span class="block text-ink-muted">{{ format_number($count['commodities'], 0) }} komoditas</span>
+                            @else
+                                <span class="block text-ink-muted">Belum ada data</span>
+                            @endif
+                        </span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
     </section>
 
-    {{-- Sektor --}}
-    <section id="sektor" aria-labelledby="sektor-title" class="border-y border-slate-200/70 bg-white py-16 lg:py-24">
-        <div class="container-page">
-            <div class="max-w-2xl">
-                <p class="eyebrow">Data terbuka</p>
-                <h2 id="sektor-title" class="section-title mt-3">Sektor Buruan SAE</h2>
-                <p class="mt-3 text-base text-slate-600">
-                    Pilih sektor untuk melihat hasil panen, perkiraan panen, dan penyaluran hasil di setiap kecamatan dan kelurahan.
+    {{-- Peta --}}
+    <section aria-labelledby="peta-title" class="mt-16 border-y border-rule bg-paper-deep lg:mt-20">
+        <div class="container-page grid gap-6 py-10 lg:grid-cols-12 lg:items-center lg:py-12">
+            <div class="lg:col-span-7">
+                <h2 id="peta-title" class="display text-2xl leading-tight sm:text-[1.75rem]">Ada kelompok Buruan SAE di dekat rumah Anda?</h2>
+                <p class="mt-3 max-w-2xl leading-7 text-ink-soft">
+                    Peta sebaran menunjukkan jumlah kelompok di setiap kelurahan. Izinkan akses lokasi untuk langsung
+                    melihat kelurahan terdekat yang punya kelompok.
                 </p>
             </div>
-            <ul class="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-                @foreach ($sectors as $sector)
-                    @php($count = $stats['sectors'][$sector->value])
-                    <li>
-                        <a href="{{ route('sectors.show', $sector) }}"
-                           class="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg sm:p-4">
-                            <span class="flex h-28 items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-white p-3 ring-1 ring-brand-100/70 sm:h-36 sm:p-4">
-                                <img src="{{ asset($sector->image()) }}" alt="" loading="lazy" class="h-full w-auto max-w-full object-contain transition duration-300 group-hover:scale-105">
-                            </span>
-                            <span class="mt-4 flex items-start justify-between gap-2">
-                                <span class="text-base font-bold text-slate-900 group-hover:text-brand-700 sm:text-lg">{{ $sector->label() }}</span>
-                                <x-heroicon-m-arrow-up-right class="mt-1 size-4 shrink-0 text-slate-400 transition group-hover:text-brand-600" aria-hidden="true" />
-                            </span>
-                            <span class="mt-1 line-clamp-2 hidden text-sm text-slate-500 sm:block">{{ $sector->description() }}</span>
-                            <span class="mt-auto pt-3 text-xs font-medium text-slate-500">
-                                {{ format_number($count['groups'], 0) }} kelompok · {{ format_number($count['commodities'], 0) }} komoditas
-                            </span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </section>
-
-    {{-- Ajakan ke peta --}}
-    <section class="container-page py-16 lg:py-20">
-        <div class="relative overflow-hidden rounded-3xl bg-brand-800 px-6 py-10 text-white sm:px-10 lg:flex lg:items-center lg:justify-between lg:px-14 lg:py-14">
-            <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:22px_22px]"></div>
-            <div class="relative max-w-xl">
-                <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Temukan kelompok Buruan SAE di sekitar Anda</h2>
-                <p class="mt-3 text-brand-100">Gunakan lokasi Anda untuk menemukan kelurahan terdekat yang punya kelompok, atau jelajahi sebaran kelompok di seluruh Kota Bandung.</p>
-            </div>
-            <div class="relative mt-6 flex flex-wrap gap-3 lg:mt-0 lg:shrink-0">
-                <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="btn bg-white px-5 py-3 text-brand-800 hover:bg-brand-50 focus-visible:outline-white">
+            <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+                <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="button button-primary px-5 py-3">
                     <x-heroicon-o-map-pin class="size-5" aria-hidden="true" /> Cari dari lokasi saya
                 </a>
-                <a href="{{ route('map') }}" class="btn border border-white/40 px-5 py-3 text-white hover:bg-white/10 focus-visible:outline-white">
-                    <x-heroicon-o-map class="size-5" aria-hidden="true" /> Buka peta sebaran
-                </a>
+                <a href="{{ route('map') }}" class="button button-outline px-5 py-3">Buka peta sebaran</a>
             </div>
         </div>
     </section>
 
     {{-- Berita --}}
     @if ($latestNews->isNotEmpty())
-        <section aria-labelledby="berita-title" class="container-page pb-4">
-            <div class="flex items-end justify-between gap-4">
-                <div>
-                    <p class="eyebrow">Kabar terbaru</p>
-                    <h2 id="berita-title" class="section-title mt-3">Berita &amp; cerita kelompok</h2>
+        @php($lead = $latestNews->first())
+        <section aria-labelledby="berita-title" class="container-page pt-16 lg:pt-20">
+            <div class="section-head flex items-baseline justify-between gap-4">
+                <h2 id="berita-title">Berita</h2>
+                <a href="{{ route('news.index') }}" class="link text-sm">Semua berita</a>
+            </div>
+            <div class="mt-6 grid gap-8 lg:grid-cols-12 lg:gap-12">
+                <article class="group relative lg:col-span-7">
+                    <img src="{{ asset($lead->image) }}" alt="" loading="lazy" class="aspect-[16/9] w-full rounded-sm object-cover">
+                    <h3 class="display mt-4 text-2xl leading-snug sm:text-[1.75rem]">
+                        <a href="{{ route('news.show', $lead->slug) }}" class="decoration-1 underline-offset-4 group-hover:underline after:absolute after:inset-0">{{ $lead->title }}</a>
+                    </h3>
+                    <p class="mt-3 max-w-2xl leading-7 text-ink-soft">{{ $lead->excerpt() }}</p>
+                </article>
+                <div class="border-t border-rule lg:col-span-5 lg:border-t-0">
+                    @foreach ($latestNews->skip(1) as $article)
+                        <article class="group relative grid grid-cols-[1fr_7rem] gap-4 border-b border-rule py-5 sm:grid-cols-[1fr_9rem] lg:first:pt-0">
+                            <div class="min-w-0">
+                                <h3 class="font-serif text-lg leading-snug font-semibold text-ink">
+                                    <a href="{{ route('news.show', $article->slug) }}" class="decoration-1 underline-offset-4 group-hover:underline after:absolute after:inset-0">{{ $article->title }}</a>
+                                </h3>
+                                <p class="mt-2 line-clamp-2 text-sm leading-6 text-ink-soft">{{ $article->excerpt() }}</p>
+                            </div>
+                            <img src="{{ asset($article->image) }}" alt="" loading="lazy" class="aspect-[4/3] w-full rounded-sm object-cover">
+                        </article>
+                    @endforeach
                 </div>
-                <a href="{{ route('news.index') }}" class="hidden items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-800 sm:inline-flex">
-                    Semua berita <x-heroicon-m-arrow-right class="size-4" aria-hidden="true" />
-                </a>
             </div>
-            <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ($latestNews as $article)
-                    <x-news-card :article="$article" />
-                @endforeach
-            </div>
-            <a href="{{ route('news.index') }}" class="btn btn-secondary mt-6 w-full sm:hidden">Semua berita</a>
         </section>
     @endif
 </x-layouts.app>

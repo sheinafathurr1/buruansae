@@ -71,7 +71,8 @@ karena format hash Myth/Auth berbeda (lihat `docs/DATABASE.md`).
 - MariaDB 10.6+ / MySQL 8 (produksi), SQLite (pengujian)
 - Blade + Tailwind CSS 4 + Alpine.js, dibundel dengan Vite
 - Chart.js (grafik), Leaflet + OpenStreetMap (peta), Tom Select (pilihan dengan pencarian)
-- Ikon: Blade Heroicons · Huruf: Plus Jakarta Sans (di-hosting sendiri)
+- Ikon: Blade Heroicons · Huruf (di-hosting sendiri): portal publik memakai Source Serif 4 untuk judul & angka dan Public Sans untuk teks; dashboard pengelola memakai Plus Jakarta Sans
+- Gaya portal publik: latar kertas, garis tipis, foto kegiatan asli dengan keterangan (token warna `paper`, `ink`, `rule`, `soil` di `resources/css/app.css`). Foto pembuka beranda diatur di `config/buruansae.php` (`hero`)
 
 ## Menjalankan di komputer lokal
 

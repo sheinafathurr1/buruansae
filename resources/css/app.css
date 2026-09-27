@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import '@fontsource-variable/public-sans/wght.css';
+@import '@fontsource-variable/source-serif-4/opsz.css';
 @import 'tom-select/dist/css/tom-select.css' layer(components);
 @import 'leaflet/dist/leaflet.css' layer(components);
 
@@ -41,6 +43,17 @@
     --color-series-sold: #1baf7a;
 
     --color-surface: #f6f7f4;
+
+    /* Portal publik: gaya laporan dinas/koran — kertas, tinta, garis tipis. */
+    --font-serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+    --font-body: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --color-paper: #f6f3ec;
+    --color-paper-deep: #ebe5d6;
+    --color-ink: #1c211b;
+    --color-ink-soft: #444b41;
+    --color-ink-muted: #5f665b; /* ≥ 4,5:1 di atas paper-deep */
+    --color-rule: #d6cfbd;
+    --color-soil: #b3412c; /* merah tanah dari logo Buruan SAE */
 }
 
 @layer base {
@@ -55,6 +68,10 @@
 
     :focus-visible {
         @apply outline-2 outline-offset-2 outline-brand-600;
+    }
+
+    .site :focus-visible {
+        @apply outline-brand-800;
     }
 
     [x-cloak] {
@@ -168,8 +185,88 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* Isi berita: serif untuk bacaan panjang. */
     .prose-article p {
-        @apply mb-5 text-base leading-8 text-slate-700 sm:text-lg;
+        font-family: var(--font-serif);
+        @apply mb-6 text-lg leading-[1.8] text-ink sm:text-[1.1875rem];
+    }
+
+    /* ---- Portal publik ------------------------------------------------- */
+    .site {
+        @apply bg-paper font-body text-ink;
+    }
+
+    .display {
+        font-family: var(--font-serif);
+        font-weight: 600;
+        letter-spacing: -0.012em;
+        @apply text-ink;
+    }
+
+    /* Judul bagian: garis tinta di atas, judul serif (tanpa label kapital kecil). */
+    .section-head {
+        @apply border-t border-ink pt-4;
+    }
+
+    .section-head h2 {
+        font-family: var(--font-serif);
+        font-weight: 600;
+        letter-spacing: -0.012em;
+        @apply text-2xl leading-tight text-ink sm:text-[1.75rem];
+    }
+
+    .link {
+        @apply font-semibold text-brand-800 underline decoration-brand-800/30 decoration-1 underline-offset-4 transition-colors hover:decoration-brand-800;
+    }
+
+    .button {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60;
+    }
+
+    .button-primary {
+        @apply bg-brand-800 text-white hover:bg-brand-900 focus-visible:outline-brand-800;
+    }
+
+    .button-outline {
+        @apply border border-ink/25 bg-transparent text-ink hover:border-ink hover:bg-white/60 focus-visible:outline-ink;
+    }
+
+    /* Bidang putih untuk data (grafik, tabel, peta); sudut kecil, tanpa bayangan. */
+    .panel {
+        @apply rounded-md border border-rule bg-white;
+    }
+
+    .figure-number {
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums lining-nums;
+        letter-spacing: -0.02em;
+    }
+
+    .data-table {
+        @apply min-w-full text-left text-sm;
+    }
+
+    .data-table thead th {
+        @apply border-b border-ink/70 px-3 py-2.5 text-xs font-semibold text-ink-muted first:pl-0 last:pr-0;
+    }
+
+    .data-table tbody td {
+        @apply border-b border-rule px-3 py-2.5 align-top text-ink first:pl-0 last:pr-0;
+    }
+
+    .data-table tbody tr:last-child td,
+    .data-table tbody tr:last-child th[scope='row'] {
+        @apply border-b-0;
+    }
+
+    .site .form-control,
+    .site .ts-wrapper .ts-control {
+        @apply rounded-md border-ink/20 shadow-none;
+    }
+
+    .site .form-label {
+        @apply text-ink-soft;
     }
 }
 
@@ -209,5 +306,5 @@
     box-shadow: 0 0 0 6px rgb(37 99 235 / 0.25), 0 1px 3px rgb(0 0 0 / 0.3);
 }
 .leaflet-popup-content-wrapper {
-    @apply rounded-xl shadow-lg;
+    @apply rounded-md shadow-lg;
 }

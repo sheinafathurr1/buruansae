@@ -1,15 +1,11 @@
 @props(['article', 'headingLevel' => 3])
-<article {{ $attributes->class('card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg') }}>
-    <div class="aspect-[16/9] overflow-hidden bg-slate-100">
-        <img src="{{ asset($article->image) }}" alt="" loading="lazy" class="size-full object-cover transition duration-500 group-hover:scale-105">
-    </div>
-    <div class="flex flex-1 flex-col p-5">
-        <h{{ $headingLevel }} class="line-clamp-2 text-base font-bold leading-snug text-slate-900 group-hover:text-brand-700">
-            <a href="{{ route('news.show', $article->slug) }}" class="after:absolute after:inset-0">{{ $article->title }}</a>
+{{-- Satu berita dalam daftar: gambar di samping judul, dipisah garis tipis. --}}
+<article {{ $attributes->class('group relative grid gap-4 border-b border-rule py-6 first:pt-0 sm:grid-cols-[16rem_1fr] sm:gap-6') }}>
+    <img src="{{ asset($article->image) }}" alt="" loading="lazy" class="aspect-[16/10] w-full rounded-sm object-cover">
+    <div class="min-w-0">
+        <h{{ $headingLevel }} class="font-serif text-xl leading-snug font-semibold text-ink sm:text-2xl">
+            <a href="{{ route('news.show', $article->slug) }}" class="decoration-1 underline-offset-4 group-hover:underline after:absolute after:inset-0">{{ $article->title }}</a>
         </h{{ $headingLevel }}>
-        <p class="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-slate-600">{{ $article->excerpt() }}</p>
-        <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-700">
-            Baca selengkapnya <x-heroicon-m-arrow-right class="size-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
-        </span>
+        <p class="mt-2 line-clamp-3 leading-7 text-ink-soft">{{ $article->excerpt() }}</p>
     </div>
 </article>

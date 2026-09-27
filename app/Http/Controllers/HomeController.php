@@ -14,7 +14,9 @@ class HomeController extends Controller
         return view('home', [
             'sectors' => SectorType::cases(),
             'stats' => $statistics->get(),
-            'latestNews' => $news->all()->take(3),
+            'hero' => config('buruansae.hero'),
+            'heroArticle' => $news->find(config('buruansae.hero.article')),
+            'latestNews' => $news->all()->reject(fn ($article) => $article->slug === config('buruansae.hero.article'))->take(3)->values(),
         ]);
     }
 }
