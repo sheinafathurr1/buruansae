@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Enums\SectorType;
 use App\Models\Commodity;
 use App\Models\FarmerGroup;
+use App\Models\Production;
 use App\Models\Village;
 use App\Services\HomeStatistics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -79,6 +81,30 @@ class PublicPagesTest extends TestCase
             ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=()');
 
         $this->get('/')->assertOk()->assertSee(route('map', ['lokasi' => 'saya']), false);
+    }
+
+    public function test_home_shows_monthly_harvest_and_group_map(): void
+    {
+        Carbon::setTestNow('2026-05-20');
+        $village = Village::factory()->create(['latitude' => -6.9, 'longitude' => 107.6]);
+        $group = FarmerGroup::factory()->create(['village_id' => $village->id]);
+        $kangkung = Commodity::factory()->inSector('SAYUR')->create();
+        Production::factory()->for($group)->for($kangkung)->harvestedOn('2026-02-10', 12.5)->create(['start_date' => '2026-01-10']);
+        Production::factory()->for($group)->for($kangkung)->harvestedOn('2026-04-05', 30)->create(['start_date' => '2026-03-01']);
+        // Salah ketik tahun (panen sebelum tanam) tidak memperpanjang rentang data.
+        Production::factory()->for($group)->for($kangkung)->harvestedOn('2016-04-05', 3)->create(['start_date' => '2026-03-01']);
+
+        $stats = app(HomeStatistics::class)->get();
+
+        $this->assertSame(2026, $stats['since_year']);
+        $this->assertSame(
+            [['month' => '2026-02', 'total' => 12.5], ['month' => '2026-03', 'total' => 0.0], ['month' => '2026-04', 'total' => 30.0]],
+            $stats['monthly_harvest'],
+        );
+        $this->assertSame([['lat' => -6.9, 'lng' => 107.6, 'groups' => 1]], $stats['map_points']);
+
+        $this->get('/')->assertOk()->assertSee('Panen tercatat per bulan')->assertSee('April 2026');
+        Carbon::setTestNow();
     }
 
     public function test_image_urls_follow_the_visited_address_not_app_url(): void

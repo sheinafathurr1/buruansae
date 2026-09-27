@@ -6,7 +6,7 @@
 ])
 @php
     $pageTitle = ($title ? $title.' · ' : '').'Buruan SAE — DKPP Kota Bandung';
-    $ogImage = $image ? asset($image) : asset('images/hero/farm.jpg');
+    $ogImage = asset($image ?? config('buruansae.hero.image'));
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $description }}">
-    <meta name="theme-color" content="#1f8a4c">
+    <meta name="theme-color" content="#16351f">
     <link rel="canonical" href="{{ url()->current() }}">
 
     <meta property="og:type" content="website">
@@ -35,9 +35,9 @@
     <noscript><style>[data-mobile-collapsible]{display:block!important}[data-js-only]{display:none!important}</style></noscript>
     @stack('head')
 </head>
-<body class="flex min-h-screen flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+<body class="site flex min-h-screen flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
     <a href="#konten"
-       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-800 focus:shadow-lg">
+       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-800 focus:shadow-lg">
         Langsung ke konten utama
     </a>
 

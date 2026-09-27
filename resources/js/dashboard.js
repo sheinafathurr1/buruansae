@@ -4,7 +4,9 @@ import { initSearchableSelects } from './searchable-select';
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
 const numberFormat = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
-const INK = { primary: '#0f172a', secondary: '#475569', muted: '#64748b', grid: '#e8eae6' };
+// Warna tinta & garis portal publik (lihat resources/css/app.css).
+const INK = { primary: '#1c211b', secondary: '#444b41', muted: '#5f665b', grid: '#ece6d8', rule: '#d6cfbd' };
+Chart.defaults.font.family = "'Public Sans Variable', ui-sans-serif, system-ui, sans-serif";
 
 /**
  * Grafik batang horizontal satu seri per wilayah (kecamatan/kelurahan).
@@ -25,7 +27,7 @@ function initAreaChart(canvas) {
                     data: config.values,
                     backgroundColor: config.color,
                     hoverBackgroundColor: config.hoverColor ?? config.color,
-                    borderRadius: 4,
+                    borderRadius: 4, // ujung data membulat, pangkal tetap siku (borderSkipped)
                     borderSkipped: 'start',
                     maxBarThickness: 20,
                     categoryPercentage: 0.8,
@@ -54,7 +56,7 @@ function initAreaChart(canvas) {
                     title: { display: true, text: config.unit, color: INK.muted, font: { size: 11 } },
                 },
                 y: {
-                    border: { color: '#cbd5e1' },
+                    border: { color: INK.rule },
                     grid: { display: false },
                     ticks: {
                         color: INK.secondary,
@@ -71,7 +73,7 @@ function initAreaChart(canvas) {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: '#ffffff',
-                    borderColor: '#e2e8f0',
+                    borderColor: INK.rule,
                     borderWidth: 1,
                     titleColor: INK.muted,
                     titleFont: { size: 12, weight: 500 },
@@ -80,7 +82,7 @@ function initAreaChart(canvas) {
                     footerColor: INK.muted,
                     footerFont: { size: 11, weight: 400 },
                     padding: 12,
-                    cornerRadius: 10,
+                    cornerRadius: 4,
                     displayColors: false,
                     callbacks: {
                         label: (context) => `${numberFormat.format(context.raw)} ${config.unit}`,

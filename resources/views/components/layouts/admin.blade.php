@@ -31,7 +31,7 @@
            :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
         <div class="flex h-16 shrink-0 items-center justify-between gap-3 px-5 lg:h-[72px]">
             <a href="{{ route('admin.dashboard') }}" class="inline-flex rounded-xl bg-white px-2.5 py-1.5" aria-label="Dashboard pengelola">
-                <img src="{{ asset('images/brand/logo-buruansae-dkpp.png') }}" alt="Buruan SAE dan DKPP Kota Bandung" class="h-8 w-auto">
+                <img src="{{ asset('images/brand/logo-horizontal.png') }}" alt="Buruan Saé Utama" width="898" height="360" class="h-9 w-auto">
             </a>
             <button type="button" class="rounded-lg p-2 text-brand-100 hover:bg-white/10 lg:hidden" @click="sidebar = false" aria-label="Tutup menu">
                 <x-heroicon-o-x-mark class="size-5" aria-hidden="true" />

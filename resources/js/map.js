@@ -69,7 +69,7 @@ if (root) {
         const html = document.createElement('div');
         html.className = 'map-marker';
         html.style.width = html.style.height = `${size}px`;
-        html.style.background = count > 0 ? '#1a6f3e' : '#94a3b8'; // brand-700: kontras teks putih ≥ 4,5:1
+        html.style.background = count > 0 ? '#1f6f35' : '#a8a18f'; // leaf-700: kontras teks putih ≥ 4,5:1
         html.style.fontSize = `${size > 34 ? 13 : 11}px`;
         if (count > 0) html.textContent = String(count);
 
@@ -80,19 +80,19 @@ if (root) {
         const wrap = document.createElement('div');
         wrap.className = 'min-w-44';
         const title = document.createElement('p');
-        title.className = 'text-sm font-bold text-slate-900 !m-0';
+        title.className = 'font-serif text-base font-semibold text-ink !m-0';
         title.textContent = `Kel. ${displayName(location.name)}`;
         const sub = document.createElement('p');
-        sub.className = 'text-xs text-slate-500 !mt-0.5 !mb-2';
+        sub.className = 'text-xs text-ink-muted !mt-0.5 !mb-2';
         sub.textContent = `Kec. ${displayName(location.district)}`;
         const stats = document.createElement('p');
-        stats.className = 'text-sm text-slate-700 !m-0';
+        stats.className = 'text-sm text-ink-soft !m-0';
         stats.textContent = `${numberFormat.format(location.total_kelompok)} kelompok · ${numberFormat.format(location.active_kelompok)} aktif`;
         wrap.append(title, sub, stats);
 
         if (distances.has(location.id)) {
             const distance = document.createElement('p');
-            distance.className = 'text-xs text-slate-500 !mt-1 !mb-0';
+            distance.className = 'text-xs text-ink-muted !mt-1 !mb-0';
             distance.textContent = `${formatDistance(distances.get(location.id))} dari lokasi Anda`;
             wrap.append(distance);
         }
@@ -124,7 +124,7 @@ if (root) {
 
         if (items.length === 0) {
             const empty = document.createElement('li');
-            empty.className = 'px-4 py-8 text-center text-sm text-slate-500';
+            empty.className = 'px-4 py-8 text-center text-sm text-ink-muted';
             empty.textContent = 'Tidak ada kelurahan yang cocok dengan filter.';
             el.list.append(empty);
             return;
@@ -143,26 +143,26 @@ if (root) {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className =
-                    'flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-brand-50 focus-visible:bg-brand-50 focus-visible:outline-none';
+                    'flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-paper focus-visible:bg-paper focus-visible:outline-none';
                 const text = document.createElement('span');
                 text.className = 'min-w-0';
                 const name = document.createElement('span');
-                name.className = 'block truncate text-sm font-semibold text-slate-800';
+                name.className = 'block truncate text-sm font-semibold text-ink';
                 name.textContent = displayName(location.name);
                 const district = document.createElement('span');
-                district.className = 'block truncate text-xs text-slate-500';
+                district.className = 'block truncate text-xs text-ink-muted';
                 district.textContent = byDistance
                     ? `Kec. ${displayName(location.district)} · ${formatDistance(distances.get(location.id))}`
                     : `Kec. ${displayName(location.district)}`;
                 if (location.id === nearestId) {
                     const tag = document.createElement('span');
-                    tag.className = 'mb-0.5 inline-block rounded-full bg-brand-700 px-2 py-0.5 text-[11px] font-bold text-white';
+                    tag.className = 'mb-0.5 block text-[11px] font-bold tracking-wide text-soil uppercase';
                     tag.textContent = 'Terdekat';
                     text.append(tag);
                 }
                 text.append(name, district);
                 const badge = document.createElement('span');
-                badge.className = `num shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${location.total_kelompok > 0 ? 'bg-brand-100 text-brand-800' : 'bg-slate-100 text-slate-500'}`;
+                badge.className = `num shrink-0 text-sm ${location.total_kelompok > 0 ? 'font-semibold text-ink' : 'text-ink-muted'}`;
                 badge.textContent = `${numberFormat.format(location.total_kelompok)} kelompok`;
                 button.append(text, badge);
                 button.addEventListener('click', () => focusLocation(location));
@@ -229,7 +229,7 @@ if (root) {
         el.locateStatus.textContent = message;
         el.locateHint.hidden = message !== '';
         el.locateStatus.classList.toggle('text-red-700', isError);
-        el.locateStatus.classList.toggle('text-slate-800', !isError);
+        el.locateStatus.classList.toggle('text-ink', !isError);
     };
 
     const finishLocating = () => {
