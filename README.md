@@ -141,6 +141,18 @@ php artisan icons:cache
   biasa); bila hosting tidak mengizinkan symlink, gambar disajikan lewat route cadangan. Rincian di
   [`docs/DATABASE.md`](docs/DATABASE.md#gambar-dari-aplikasi-lama).
 - Setelah mengubah `.env` di server, jalankan `php artisan optimize` lagi.
+- `composer install` gagal dengan *Your Composer dependencies require a PHP version ">= 8.3.0"* berarti PHP di
+  terminal masih versi lama. Pilih PHP 8.3 untuk website (hPanel Hostinger: Websites → Manage → Advanced →
+  PHP Configuration), lalu buka ulang SSH. Bila `php -v` tetap versi lama, dahulukan biner 8.3 di `PATH`
+  (di Hostinger umumnya `/opt/alt/php83/usr/bin/php`; cek dengan `ls -d /opt/alt/php8*`):
+
+  ```bash
+  mkdir -p ~/bin && ln -sf /opt/alt/php83/usr/bin/php ~/bin/php
+  echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+  php -v && composer --version    # keduanya harus menyebut PHP 8.3.x
+  ```
+
+  Jangan memakai `--ignore-platform-reqs`: kode butuh PHP 8.3, jadi aplikasi tetap akan gagal saat dijalankan.
 
 ### Deploy ulang (memperbarui aplikasi yang sudah berjalan)
 
