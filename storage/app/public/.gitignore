@@ -1,2 +1,11 @@
+# Unggahan baru dari dashboard (nama acak 32 karakter, tanpa "_") tidak masuk git.
+# Foto dari aplikasi lama (nama seperti "1742111697_9f63dfb74c3047bfd3b5.png")
+# ikut di-commit supaya terbawa saat deploy.
 *
 !.gitignore
+!images/
+!images/panen/
+!images/kelompok/
+!images/[0-9]*_*
+!images/panen/[0-9]*_*
+!images/kelompok/[0-9]*_*

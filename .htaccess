@@ -1,9 +1,14 @@
+# Dipakai bila document root hosting menunjuk ke folder proyek (bukan /public),
+# misalnya di shared hosting. Semua request diteruskan ke folder public/.
 <IfModule mod_rewrite.c>
     DirectoryIndex index.php
     Options -Indexes
-    
+
     RewriteEngine On
-    
-    # Unconditionally rewrite everything to the "public" subdirectory
-    RewriteRule (.*) public/$1 [L]
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
+
+# Cadangan bila mod_rewrite tidak aktif: jangan pernah sajikan file sensitif.
+<FilesMatch "^(\.env.*|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|vite\.config\.js)$">
+    Require all denied
+</FilesMatch>

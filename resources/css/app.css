@@ -1,0 +1,213 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import 'tom-select/dist/css/tom-select.css' layer(components);
+@import 'leaflet/dist/leaflet.css' layer(components);
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../../app/**/*.php';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Hijau DKPP — warna utama (aksi, tautan, grafik hasil panen). */
+    --color-brand-50: #effaf2;
+    --color-brand-100: #d9f2e0;
+    --color-brand-200: #b4e4c3;
+    --color-brand-300: #82cf9d;
+    --color-brand-400: #4fb574;
+    --color-brand-500: #2e9a57;
+    --color-brand-600: #1f8a4c;
+    --color-brand-700: #1a6f3e;
+    --color-brand-800: #175834;
+    --color-brand-900: #13482c;
+    --color-brand-950: #0a2918;
+
+    /* Merah Buruan SAE — aksen identitas (bukan untuk status). */
+    --color-sae-50: #fdf2f3;
+    --color-sae-100: #fce4e6;
+    --color-sae-500: #da2f46;
+    --color-sae-600: #c1223a;
+    --color-sae-700: #a01b30;
+
+    /* Seri grafik (tervalidasi untuk buta warna, lihat resources/js/charts.js). */
+    --color-series-harvest: #1f8a4c;
+    --color-series-pending: #2a78d6;
+    --color-series-self: #2a78d6;
+    --color-series-shared: #eb6834;
+    --color-series-sold: #1baf7a;
+
+    --color-surface: #f6f7f4;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+        scroll-padding-top: 5rem;
+    }
+
+    body {
+        @apply bg-surface text-slate-800 antialiased;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-brand-600;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    .container-page {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .card {
+        @apply rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)];
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60;
+    }
+
+    .btn-primary {
+        @apply bg-brand-700 text-white shadow-sm hover:bg-brand-800 focus-visible:outline-brand-700;
+    }
+
+    .btn-secondary {
+        @apply border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-brand-600;
+    }
+
+    .btn-ghost-light {
+        @apply border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-white;
+    }
+
+    .form-label {
+        @apply mb-1.5 block text-sm font-semibold text-slate-700;
+    }
+
+    /* Tombol naik-turun bawaan input angka menutupi satuan (kg, ekor); ketik langsung saja. */
+    input[type='number'].form-control {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    input[type='number'].form-control::-webkit-inner-spin-button,
+    input[type='number'].form-control::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .form-control {
+        @apply block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 focus:outline-none;
+    }
+
+    .eyebrow {
+        @apply text-xs font-bold tracking-[0.14em] text-brand-700 uppercase;
+    }
+
+    .section-title {
+        @apply text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl;
+    }
+
+    .table-base {
+        @apply min-w-full text-left text-sm;
+    }
+
+    .table-base thead th {
+        @apply bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 uppercase;
+    }
+
+    .table-base tbody td {
+        @apply border-t border-slate-100 px-4 py-3 align-top text-slate-700;
+    }
+
+    /* Tabel admin: di layar kecil setiap baris menjadi kartu bertumpuk (label dari data-label). */
+    @media (max-width: 767px) {
+        .table-stack thead {
+            @apply sr-only;
+        }
+        .table-stack,
+        .table-stack tbody,
+        .table-stack tr,
+        .table-stack td {
+            display: block;
+            width: 100%;
+        }
+        .table-stack tbody tr {
+            @apply border-t border-slate-100 px-4 py-3 first:border-t-0;
+        }
+        .table-stack tbody td {
+            @apply border-0 px-0 py-1;
+            text-align: left !important;
+        }
+        .table-stack td[data-label]::before {
+            content: attr(data-label);
+            @apply block text-[11px] font-semibold tracking-wide text-slate-500 uppercase;
+        }
+        .table-stack td.table-actions {
+            @apply flex flex-wrap gap-1 pt-2;
+        }
+    }
+
+    .num {
+        font-variant-numeric: tabular-nums;
+    }
+
+    .prose-article p {
+        @apply mb-5 text-base leading-8 text-slate-700 sm:text-lg;
+    }
+}
+
+/* Tom Select disesuaikan dengan gaya form. Tom Select menyalin class select
+   (form-control) ke wrapper-nya, jadi gaya kotak di wrapper dinetralkan. */
+.ts-wrapper.form-control {
+    @apply border-0 bg-transparent p-0 shadow-none ring-0;
+}
+.ts-wrapper.single .ts-control,
+.ts-wrapper .ts-control {
+    @apply min-h-[42px] rounded-xl border-slate-300 px-3.5 py-2.5 text-sm shadow-sm;
+}
+.ts-wrapper.focus .ts-control {
+    @apply border-brand-500 shadow-none ring-4 ring-brand-100;
+}
+.ts-dropdown {
+    @apply mt-1 overflow-hidden rounded-xl border-slate-200 text-sm shadow-lg;
+}
+.ts-dropdown .active {
+    @apply bg-brand-50 text-brand-800;
+}
+.ts-dropdown .option,
+.ts-dropdown .no-results {
+    @apply px-3.5 py-2;
+}
+
+/* Leaflet */
+.leaflet-container {
+    font-family: inherit;
+}
+.map-marker {
+    @apply flex items-center justify-center rounded-full border-2 border-white font-bold text-white shadow-md;
+}
+/* Titik "Lokasi Anda" pada peta. */
+.map-user-marker {
+    @apply block size-5 rounded-full border-[3px] border-white bg-blue-600;
+    box-shadow: 0 0 0 6px rgb(37 99 235 / 0.25), 0 1px 3px rgb(0 0 0 / 0.3);
+}
+.leaflet-popup-content-wrapper {
+    @apply rounded-xl shadow-lg;
+}
