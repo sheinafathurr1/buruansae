@@ -142,6 +142,27 @@ php artisan icons:cache
   [`docs/DATABASE.md`](docs/DATABASE.md#gambar-dari-aplikasi-lama).
 - Setelah mengubah `.env` di server, jalankan `php artisan optimize` lagi.
 
+### Deploy ulang (memperbarui aplikasi yang sudah berjalan)
+
+Lewat SSH, di folder aplikasi:
+
+```bash
+php artisan down                                   # halaman "sedang pemeliharaan" selama update
+git fetch origin
+git reset --hard origin/NAMA_BRANCH                # atau: git pull, bila riwayat branch tidak ditulis ulang
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force                        # aman walau tidak ada migration baru
+php artisan optimize:clear && php artisan optimize # wajib: config, route, dan view di-cache ulang
+php artisan icons:cache
+php artisan up
+```
+
+- Tidak perlu `npm`: hasil build tampilan (`public/build`) ikut di-commit.
+- `git reset --hard` membuang perubahan file yang tidak di-commit di server. Isi `.env`, `storage/` (unggahan), dan
+  `vendor/` tidak ikut git, jadi aman.
+- Jika memakai fitur Git di hPanel Hostinger (deploy otomatis), jalankan tetap perintah `composer install` sampai
+  `php artisan up` di atas lewat SSH setelah deploy.
+
 ## Memindahkan data dari database lama
 
 Struktur tabel, pemetaan nama kolom lama → baru, dan langkah impor lengkap ada di [`docs/DATABASE.md`](docs/DATABASE.md).
