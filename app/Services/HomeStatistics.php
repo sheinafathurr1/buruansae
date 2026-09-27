@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\DB;
 /** Angka ringkas untuk beranda, disimpan di cache beberapa menit. */
 class HomeStatistics
 {
-    public const CACHE_KEY = 'home.statistics';
+    // Naikkan versinya bila isi angka berubah bentuk, supaya cache lama di server tidak terbaca.
+    public const CACHE_KEY = 'home.statistics.v2';
 
     public const CACHE_TTL_SECONDS = 600;
 
