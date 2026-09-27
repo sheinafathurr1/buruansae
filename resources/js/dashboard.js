@@ -27,7 +27,7 @@ function initAreaChart(canvas) {
                     data: config.values,
                     backgroundColor: config.color,
                     hoverBackgroundColor: config.hoverColor ?? config.color,
-                    borderRadius: 1,
+                    borderRadius: 4, // ujung data membulat, pangkal tetap siku (borderSkipped)
                     borderSkipped: 'start',
                     maxBarThickness: 20,
                     categoryPercentage: 0.8,

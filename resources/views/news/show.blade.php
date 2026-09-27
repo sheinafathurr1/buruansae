@@ -7,7 +7,7 @@
         </header>
 
         <figure class="mt-8">
-            <img src="{{ asset($article->image) }}" alt="Dokumentasi kegiatan: {{ $article->title }}" class="aspect-[16/9] w-full rounded-sm object-cover">
+            <img src="{{ asset($article->image) }}" alt="Dokumentasi kegiatan: {{ $article->title }}" class="aspect-[16/9] w-full rounded-2xl object-cover">
             <figcaption class="mt-2 text-sm text-ink-muted">Dokumentasi {{ config('buruansae.agency_short') }}.</figcaption>
         </figure>
 

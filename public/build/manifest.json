@@ -3,6 +3,18 @@
     "file": "assets/searchable-select-DCMczP4t.js",
     "name": "searchable-select"
   },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-full-normal.woff2": {
+    "file": "assets/fraunces-latin-ext-full-normal-YHFkNujK.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-full-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2": {
+    "file": "assets/fraunces-latin-full-normal-CFFu7zhK.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-full-normal.woff2": {
+    "file": "assets/fraunces-vietnamese-full-normal-7BpKI3vF.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-full-normal.woff2"
+  },
   "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2": {
     "file": "assets/plus-jakarta-sans-cyrillic-ext-wght-normal-lLTsRRxN.woff2",
     "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2"
@@ -31,30 +43,6 @@
     "file": "assets/public-sans-vietnamese-wght-normal-CtlIRbEm.woff2",
     "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-vietnamese-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-cyrillic-ext-opsz-normal.woff2": {
-    "file": "assets/source-serif-4-cyrillic-ext-opsz-normal-DIwfbPUE.woff2",
-    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-cyrillic-ext-opsz-normal.woff2"
-  },
-  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-cyrillic-opsz-normal.woff2": {
-    "file": "assets/source-serif-4-cyrillic-opsz-normal-C0olyEE-.woff2",
-    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-cyrillic-opsz-normal.woff2"
-  },
-  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-greek-opsz-normal.woff2": {
-    "file": "assets/source-serif-4-greek-opsz-normal-DrHU7SY7.woff2",
-    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-greek-opsz-normal.woff2"
-  },
-  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-opsz-normal.woff2": {
-    "file": "assets/source-serif-4-latin-ext-opsz-normal-HoL-AExg.woff2",
-    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-opsz-normal.woff2"
-  },
-  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2": {
-    "file": "assets/source-serif-4-latin-opsz-normal-BpEBLj1O.woff2",
-    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2"
-  },
-  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-vietnamese-opsz-normal.woff2": {
-    "file": "assets/source-serif-4-vietnamese-opsz-normal-BOyYyU_V.woff2",
-    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-vietnamese-opsz-normal.woff2"
-  },
   "node_modules/leaflet/dist/images/layers-2x.png": {
     "file": "assets/layers-2x-Bpkbi35X.png",
     "src": "node_modules/leaflet/dist/images/layers-2x.png"
@@ -68,7 +56,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-4czDO1na.css",
+    "file": "assets/app-B6DZyOzW.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -92,7 +80,7 @@
     "isEntry": true
   },
   "resources/js/dashboard.js": {
-    "file": "assets/dashboard-7IkrHekL.js",
+    "file": "assets/dashboard-CQZc40cE.js",
     "name": "dashboard",
     "src": "resources/js/dashboard.js",
     "isEntry": true,
@@ -101,7 +89,7 @@
     ]
   },
   "resources/js/map.js": {
-    "file": "assets/map-fRGhhdLJ.js",
+    "file": "assets/map-CgnyAi_l.js",
     "name": "map",
     "src": "resources/js/map.js",
     "isEntry": true

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
 @import '@fontsource-variable/public-sans/wght.css';
-@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/fraunces/full.css';
 @import 'tom-select/dist/css/tom-select.css' layer(components);
 @import 'leaflet/dist/leaflet.css' layer(components);
 
@@ -44,16 +44,33 @@
 
     --color-surface: #f6f7f4;
 
-    /* Portal publik: gaya laporan dinas/koran — kertas, tinta, garis tipis. */
-    --font-serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+    /* Portal publik — warna & huruf diturunkan dari logo Buruan Saé Utama:
+       langit, air, daun, tanah; judul Fraunces (serif lembut seperti tulisan logo). */
+    --font-serif: 'Fraunces Variable', 'Fraunces', Georgia, 'Times New Roman', serif;
     --font-body: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
-    --color-paper: #f6f3ec;
-    --color-paper-deep: #ebe5d6;
-    --color-ink: #1c211b;
-    --color-ink-soft: #444b41;
-    --color-ink-muted: #5f665b; /* ≥ 4,5:1 di atas paper-deep */
-    --color-rule: #d6cfbd;
-    --color-soil: #b3412c; /* merah tanah dari logo Buruan SAE */
+    --color-paper: #fbfaf6;
+    --color-paper-deep: #f2eee4;
+    --color-ink: #1b1c18;
+    --color-ink-soft: #44473f;
+    --color-ink-muted: #5d6258; /* ≥ 4,5:1 di atas paper-deep */
+    --color-rule: #dcd6c8;
+    --color-sky-50: #effaff;
+    --color-sky-100: #dcf3fc;
+    --color-sky-200: #bfe8f8;
+    --color-sky-300: #93d8f4;
+    --color-sky-400: #52c4ef;
+    --color-water: #1b93cf;
+    --color-water-deep: #0f6e9e;
+    --color-leaf-300: #b5dc7c;
+    --color-leaf-400: #8cc63f;
+    --color-leaf-500: #3fb34f;
+    --color-leaf-600: #2e8b45;
+    --color-leaf-700: #1f6f35; /* tombol & tautan: teks putih 6:1 */
+    --color-leaf-900: #16351f;
+    --color-soil-400: #e0a14a;
+    --color-soil-500: #d38b2b;
+    --color-soil: #95591b; /* teks aksen/peringatan: 5:1 di atas paper */
+    --color-soil-900: #4a3719;
 }
 
 @layer base {
@@ -71,7 +88,7 @@
     }
 
     .site :focus-visible {
-        @apply outline-brand-800;
+        @apply outline-leaf-700;
     }
 
     [x-cloak] {
@@ -185,10 +202,8 @@
         font-variant-numeric: tabular-nums;
     }
 
-    /* Isi berita: serif untuk bacaan panjang. */
     .prose-article p {
-        font-family: var(--font-serif);
-        @apply mb-6 text-lg leading-[1.8] text-ink sm:text-[1.1875rem];
+        @apply mb-6 text-lg leading-[1.8] text-ink-soft;
     }
 
     /* ---- Portal publik ------------------------------------------------- */
@@ -199,48 +214,63 @@
     .display {
         font-family: var(--font-serif);
         font-weight: 600;
-        letter-spacing: -0.012em;
+        font-variation-settings: 'SOFT' 60, 'WONK' 0;
+        letter-spacing: -0.015em;
         @apply text-ink;
     }
 
-    /* Judul bagian: garis tinta di atas, judul serif (tanpa label kapital kecil). */
+    /* Judul bagian: tanda tiga lapis (daun, air, tanah) seperti dasar emblem. */
     .section-head {
-        @apply border-t border-ink pt-4;
+        @apply relative pt-5;
+    }
+
+    .section-head::before {
+        content: '';
+        @apply absolute top-0 left-0 h-1 w-14 rounded-full;
+        background: linear-gradient(90deg, var(--color-leaf-500) 0 33%, var(--color-water) 33% 66%, var(--color-soil-500) 66%);
     }
 
     .section-head h2 {
         font-family: var(--font-serif);
         font-weight: 600;
-        letter-spacing: -0.012em;
-        @apply text-2xl leading-tight text-ink sm:text-[1.75rem];
+        font-variation-settings: 'SOFT' 60, 'WONK' 0;
+        letter-spacing: -0.015em;
+        @apply text-[1.75rem] leading-tight text-ink sm:text-[2rem];
     }
 
     .link {
-        @apply font-semibold text-brand-800 underline decoration-brand-800/30 decoration-1 underline-offset-4 transition-colors hover:decoration-brand-800;
+        @apply font-semibold text-leaf-700 underline decoration-leaf-700/30 decoration-1 underline-offset-4 transition-colors hover:decoration-leaf-700;
     }
 
     .button {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60;
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60;
     }
 
     .button-primary {
-        @apply bg-brand-800 text-white hover:bg-brand-900 focus-visible:outline-brand-800;
+        @apply bg-leaf-700 text-white hover:bg-leaf-900 focus-visible:outline-leaf-700;
     }
 
     .button-outline {
-        @apply border border-ink/25 bg-transparent text-ink hover:border-ink hover:bg-white/60 focus-visible:outline-ink;
+        @apply border border-ink/25 bg-white/60 text-ink hover:border-ink hover:bg-white focus-visible:outline-ink;
     }
 
-    /* Bidang putih untuk data (grafik, tabel, peta); sudut kecil, tanpa bayangan. */
+    /* Bidang putih untuk data (grafik, tabel, peta). */
     .panel {
-        @apply rounded-md border border-rule bg-white;
+        @apply rounded-xl border border-rule bg-white;
     }
 
+    /* Bingkai lengkung = siluet emblem logo (atas setengah lingkaran). Pakai pada rasio 4:5. */
+    .arch {
+        border-radius: 50% 50% 1.25rem 1.25rem / 40% 40% 1.25rem 1.25rem;
+        @apply overflow-hidden;
+    }
+
+    /* Angka besar: sans tebal, angka proporsional (bukan tabular). */
     .figure-number {
-        font-family: var(--font-serif);
-        font-weight: 600;
-        font-variant-numeric: tabular-nums lining-nums;
-        letter-spacing: -0.02em;
+        font-family: var(--font-body);
+        font-weight: 650;
+        font-variant-numeric: lining-nums proportional-nums;
+        letter-spacing: -0.025em;
     }
 
     .data-table {
@@ -253,6 +283,10 @@
 
     .data-table tbody td {
         @apply border-b border-rule px-3 py-2.5 align-top text-ink first:pl-0 last:pr-0;
+    }
+
+    .data-table tbody th[scope='row'] {
+        @apply border-b border-rule;
     }
 
     .data-table tbody tr:last-child td,

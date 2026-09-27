@@ -6,13 +6,8 @@
     ];
 @endphp
 <x-layouts.app title="Peta Sebaran Kelompok" description="Peta sebaran kelompok Buruan SAE di setiap kelurahan Kota Bandung." :scripts="['resources/js/map.js']">
-    <section class="border-b border-rule">
-        <div class="container-page py-6 lg:py-8">
-            <x-breadcrumb :items="[['Beranda', route('home')], ['Peta sebaran', null]]" />
-            <h1 class="display mt-4 text-3xl leading-tight sm:text-4xl">Peta sebaran kelompok</h1>
-            <p class="mt-1 max-w-2xl text-ink-soft">Angka pada titik menunjukkan jumlah kelompok Buruan SAE di kelurahan tersebut.</p>
-        </div>
-    </section>
+    <x-page-hero title="Peta sebaran kelompok" description="Angka pada titik menunjukkan jumlah kelompok Buruan SAE di kelurahan tersebut."
+                 :breadcrumbs="[['Beranda', route('home')], ['Peta sebaran', null]]" />
 
     <div class="container-page py-6" data-map-explorer="{{ json_encode($mapConfig, JSON_UNESCAPED_SLASHES) }}">
         {{-- Di atas peta supaya langsung terlihat di layar ponsel. --}}
@@ -49,7 +44,7 @@
                         </div>
                     </div>
                     <label class="flex items-center gap-2 text-sm text-ink-soft">
-                        <input type="checkbox" class="size-4 rounded border-ink/30 text-brand-800 focus:ring-brand-700" data-filter-empty>
+                        <input type="checkbox" class="size-4 rounded border-ink/30 text-leaf-700 focus:ring-leaf-700" data-filter-empty>
                         Tampilkan kelurahan tanpa kelompok
                     </label>
                 </div>
@@ -63,7 +58,7 @@
             <div class="panel relative order-1 isolate overflow-hidden lg:order-2">
                 <div data-map class="h-[55vh] min-h-[360px] w-full lg:h-[calc(100vh-12rem)] lg:min-h-[560px]" role="region" aria-label="Peta sebaran kelompok Buruan SAE"></div>
                 <div class="pointer-events-none absolute bottom-3 left-3 z-[400] rounded-sm bg-white/95 px-3 py-2 text-xs text-ink-soft ring-1 ring-rule">
-                    <p class="flex items-center gap-2"><span class="inline-block size-3 rounded-full bg-brand-800 ring-2 ring-white" aria-hidden="true"></span> Ada kelompok (angka = jumlah)</p>
+                    <p class="flex items-center gap-2"><span class="inline-block size-3 rounded-full bg-leaf-700 ring-2 ring-white" aria-hidden="true"></span> Ada kelompok (angka = jumlah)</p>
                     <p class="mt-1 flex items-center gap-2"><span class="inline-block size-3 rounded-full bg-[#a8a18f] ring-2 ring-white" aria-hidden="true"></span> Belum ada kelompok</p>
                 </div>
             </div>

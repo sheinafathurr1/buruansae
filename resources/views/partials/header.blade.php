@@ -8,12 +8,12 @@
     $sectorActive = request()->routeIs('sectors.*');
     $navLink = fn (bool $active) => [
         'relative inline-flex h-full items-center gap-1 px-3 transition-colors',
-        'text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:bg-brand-800' => $active,
+        'text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:rounded-full after:bg-leaf-500' => $active,
         'text-ink-soft hover:text-ink' => ! $active,
     ];
 @endphp
 {{-- Pita identitas pemerintah, seperti situs resmi dinas. --}}
-<aside aria-label="Identitas situs dan kontak" class="bg-brand-950 text-[13px] text-white/85">
+<aside aria-label="Identitas situs dan kontak" class="bg-leaf-900 text-[13px] text-white/85">
     <div class="container-page flex h-9 items-center justify-between gap-4">
         <p class="flex min-w-0 items-center gap-2.5">
             <img src="{{ asset('images/partners/bandung-white.png') }}" alt="" width="120" height="40" class="h-4 w-auto shrink-0 opacity-90">
@@ -27,9 +27,9 @@
 </aside>
 
 <header class="sticky top-0 z-40 border-b border-rule bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85">
-    <div class="container-page flex h-16 items-stretch justify-between gap-6 lg:h-[72px]">
-        <a href="{{ route('home') }}" class="flex shrink-0 items-center" aria-label="Buruan SAE — DKPP Kota Bandung, ke beranda">
-            <img src="{{ asset('images/brand/logo-buruansae-dkpp.png') }}" alt="Buruan SAE dan DKPP Kota Bandung" width="566" height="241" class="h-10 w-auto lg:h-11">
+    <div class="container-page flex h-16 items-stretch justify-between gap-6 lg:h-[76px]">
+        <a href="{{ route('home') }}" class="flex shrink-0 items-center" aria-label="Buruan Saé Utama, ke beranda">
+            <img src="{{ asset('images/brand/logo-horizontal.png') }}" alt="Buruan Saé Utama" width="898" height="360" class="h-11 w-auto lg:h-[52px]">
         </a>
 
         <nav aria-label="Navigasi utama" class="hidden lg:block">
@@ -43,7 +43,7 @@
                         <x-heroicon-m-chevron-down class="size-4 transition" ::class="open && 'rotate-180'" aria-hidden="true" />
                     </button>
                     <div id="menu-sektor" x-show="open" x-cloak x-transition.opacity.duration.150ms
-                         class="absolute top-full left-1/2 w-[600px] -translate-x-1/2 border border-rule bg-paper shadow-[0_12px_32px_-12px_rgb(28_33_27/0.35)]">
+                         class="absolute top-full left-1/2 w-[600px] -translate-x-1/2 overflow-hidden rounded-b-xl border border-rule bg-paper shadow-[0_16px_40px_-16px_rgb(27_28_24/0.4)]">
                         <ul class="grid grid-cols-2">
                             @foreach (SectorType::cases() as $case)
                                 @php($isCurrent = request()->route('sector') === $case)

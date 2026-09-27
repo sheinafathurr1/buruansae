@@ -12,13 +12,13 @@
                 <li>
                     @if ($href)
                         <a href="{{ $href }}" @if($active) aria-current="page" @endif
-                           @class(['flex h-full flex-col items-center justify-center gap-1', 'text-brand-800' => $active, 'text-ink-muted' => ! $active])>
+                           @class(['flex h-full flex-col items-center justify-center gap-1', 'text-leaf-700' => $active, 'text-ink-muted' => ! $active])>
                             <x-dynamic-component :component="'heroicon-'.($active ? 's' : 'o').'-'.$icon" class="size-6" aria-hidden="true" />
                             {{ $label }}
                         </a>
                     @else
                         <button type="button" @click="sheet = true" aria-haspopup="dialog" :aria-expanded="sheet.toString()" aria-expanded="false"
-                            @class(['flex h-full w-full flex-col items-center justify-center gap-1', 'text-brand-800' => $active, 'text-ink-muted' => ! $active])>
+                            @class(['flex h-full w-full flex-col items-center justify-center gap-1', 'text-leaf-700' => $active, 'text-ink-muted' => ! $active])>
                             <x-dynamic-component :component="'heroicon-'.($active ? 's' : 'o').'-'.$icon" class="size-6" aria-hidden="true" />
                             {{ $label }}
                         </button>

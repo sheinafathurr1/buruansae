@@ -14,11 +14,16 @@ class HomeStatistics
 
     public const CACHE_TTL_SECONDS = 600;
 
+    /** Panjang grafik panen bulanan di beranda. */
+    public const MONTHS = 30;
+
     /**
      * @return array{
      *     groups: int, active_groups: int, villages: int, districts: int,
      *     harvest_kg_this_year: float, beneficiaries_this_year: int, year: int,
      *     harvest_kg_total: float, beneficiaries_total: int, since_year: ?int, last_harvest_date: ?string,
+     *     monthly_harvest: list<array{month: string, total: float}>,
+     *     map_points: list<array{lat: float, lng: float, groups: int}>,
      *     sectors: array<string, array{groups: int, commodities: int}>,
      * }
      */
@@ -68,6 +73,9 @@ class HomeStatistics
             ->selectRaw('MIN(p.harvest_date) AS first_date, MAX(p.harvest_date) AS last_date')
             ->first();
 
+        $monthlyHarvest = $this->monthlyHarvest($harvests, $allTime, $period?->first_date, $period?->last_date);
+        $mapPoints = $this->mapPoints();
+
         $perSector = DB::table('productions as p')
             ->join('commodities as c', 'c.id', '=', 'p.commodity_id')
             ->join('sectors as s', 's.id', '=', 'c.sector_id')
@@ -101,7 +109,63 @@ class HomeStatistics
             'beneficiaries_total' => $beneficiaries($allTime),
             'since_year' => $period?->first_date ? (int) substr($period->first_date, 0, 4) : null,
             'last_harvest_date' => $period?->last_date ? substr($period->last_date, 0, 10) : null,
+            'monthly_harvest' => $monthlyHarvest,
+            'map_points' => $mapPoints,
             'sectors' => $sectors,
         ];
+    }
+
+    /**
+     * Hasil panen (kg) per bulan, paling banyak MONTHS bulan terakhir sampai bulan
+     * panen terakhir. Bulan tanpa panen bernilai 0.
+     *
+     * @return list<array{month: string, total: float}>
+     */
+    private function monthlyHarvest(\Closure $harvests, array $allTime, ?string $firstDate, ?string $lastDate): array
+    {
+        if (! $firstDate || ! $lastDate) {
+            return [];
+        }
+
+        $last = Carbon::parse(substr($lastDate, 0, 10))->startOfMonth();
+        $first = Carbon::parse(substr($firstDate, 0, 10))->startOfMonth()->max($last->copy()->subMonths(self::MONTHS - 1));
+
+        // substr() pada tanggal berlaku sama di MariaDB dan SQLite.
+        $totals = $harvests()->where('s.harvest_unit', 'kg')
+            ->whereBetween('p.harvest_date', [$first->toDateString(), $allTime[1]])
+            ->selectRaw('substr(p.harvest_date, 1, 7) AS month, SUM(p.harvest_quantity) AS total')
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $series = [];
+        for ($month = $first->copy(); $month->lte($last); $month->addMonth()) {
+            $key = $month->format('Y-m');
+            $series[] = ['month' => $key, 'total' => round((float) ($totals[$key] ?? 0), 1)];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Titik kelurahan yang punya kelompok (untuk peta mini beranda), dalam batas
+     * wilayah yang sama dengan /api/locations.
+     *
+     * @return list<array{lat: float, lng: float, groups: int}>
+     */
+    private function mapPoints(): array
+    {
+        $bounds = config('buruansae.map.locations_bounds');
+
+        return DB::table('villages as v')
+            ->join('farmer_groups as g', 'g.village_id', '=', 'v.id')
+            ->whereNull('g.deleted_at')
+            ->whereBetween('v.latitude', [$bounds['south'], $bounds['north']])
+            ->whereBetween('v.longitude', [$bounds['west'], $bounds['east']])
+            ->groupBy('v.id', 'v.latitude', 'v.longitude')
+            ->select('v.latitude', 'v.longitude')
+            ->selectRaw('COUNT(*) AS group_count')
+            ->get()
+            ->map(fn ($row) => ['lat' => (float) $row->latitude, 'lng' => (float) $row->longitude, 'groups' => (int) $row->group_count])
+            ->all();
     }
 }

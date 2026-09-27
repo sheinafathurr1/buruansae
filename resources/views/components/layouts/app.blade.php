@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $description }}">
-    <meta name="theme-color" content="#13482c">
+    <meta name="theme-color" content="#16351f">
     <link rel="canonical" href="{{ url()->current() }}">
 
     <meta property="og:type" content="website">

@@ -46,7 +46,7 @@
                                 @if ($estimated && $estimated->lt($today))
                                     <span class="ml-1 text-xs font-semibold text-soil">Terlambat</span>
                                 @elseif ($estimated && $estimated->lte($today->copy()->addDays(7)))
-                                    <span class="ml-1 text-xs font-semibold text-[#365d86]">Segera</span>
+                                    <span class="ml-1 text-xs font-semibold text-water-deep">Segera</span>
                                 @endif
                             </td>
                         </tr>

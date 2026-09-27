@@ -69,7 +69,7 @@ if (root) {
         const html = document.createElement('div');
         html.className = 'map-marker';
         html.style.width = html.style.height = `${size}px`;
-        html.style.background = count > 0 ? '#175834' : '#a8a18f'; // brand-800: kontras teks putih ≥ 4,5:1
+        html.style.background = count > 0 ? '#1f6f35' : '#a8a18f'; // leaf-700: kontras teks putih ≥ 4,5:1
         html.style.fontSize = `${size > 34 ? 13 : 11}px`;
         if (count > 0) html.textContent = String(count);
 

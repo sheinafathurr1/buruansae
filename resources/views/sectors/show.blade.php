@@ -29,34 +29,25 @@
 <x-layouts.app :title="$sector->label()" :description="'Data '.$sector->label().' Buruan SAE: hasil '.$termLower.', perkiraan '.$termLower.', dan penyaluran hasil per kecamatan dan kelurahan di Kota Bandung.'" :scripts="['resources/js/dashboard.js']" :image="$sector->image()">
 
     {{-- Kepala halaman --}}
-    <section class="border-b border-rule">
-        <div class="container-page pt-6 lg:pt-8">
-            <x-breadcrumb :items="[['Beranda', route('home')], ['Data sektor', route('home').'#sektor'], [$sector->label(), null]]" />
+    <x-page-hero :title="$sector->label()" :description="$sector->description()" :image="$sector->image()"
+                 :breadcrumbs="[['Beranda', route('home')], ['Data sektor', route('home').'#sektor'], [$sector->label(), null]]" />
 
-            <div class="mt-5 flex items-center gap-4 sm:gap-5">
-                <img src="{{ asset($sector->image()) }}" alt="" class="size-16 shrink-0 object-contain sm:size-20">
-                <div class="min-w-0">
-                    <h1 class="display text-3xl leading-tight sm:text-4xl">{{ $sector->label() }}</h1>
-                    <p class="mt-1 max-w-2xl text-ink-soft">{{ $sector->description() }}</p>
-                </div>
-            </div>
-
-            <nav aria-label="Sektor lain" class="-mx-4 mt-6 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
-                <ul class="flex w-max gap-5 text-[15px]">
-                    @foreach (SectorType::cases() as $case)
-                        <li>
-                            <a href="{{ route('sectors.show', $case) }}" @if($case === $sector) aria-current="page" @endif
-                               @class([
-                                   'inline-block border-b-[3px] pb-3 transition-colors',
-                                   'border-brand-800 font-semibold text-ink' => $case === $sector,
-                                   'border-transparent text-ink-muted hover:border-rule hover:text-ink' => $case !== $sector,
-                               ])>{{ $case->label() }}</a>
-                        </li>
-                    @endforeach
-                </ul>
-            </nav>
+    <nav aria-label="Sektor lain" class="border-b border-rule">
+        <div class="container-page overflow-x-auto [scrollbar-width:none]">
+            <ul class="flex w-max gap-5 pt-4 text-[15px]">
+                @foreach (SectorType::cases() as $case)
+                    <li>
+                        <a href="{{ route('sectors.show', $case) }}" @if($case === $sector) aria-current="page" @endif
+                           @class([
+                               'inline-block border-b-[3px] pb-3 transition-colors',
+                               'border-leaf-500 font-semibold text-ink' => $case === $sector,
+                               'border-transparent text-ink-muted hover:border-rule hover:text-ink' => $case !== $sector,
+                           ])>{{ $case->label() }}</a>
+                    </li>
+                @endforeach
+            </ul>
         </div>
-    </section>
+    </nav>
 
     <div class="container-page space-y-8 py-6 lg:py-8">
 
@@ -68,7 +59,7 @@
             <button type="button" data-js-only @click="open = !open" :aria-expanded="open.toString()" aria-expanded="{{ $filtersOpen ? 'true' : 'false' }}" aria-controls="filter-fields"
                     class="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-ink sm:hidden">
                 <span class="inline-flex items-center gap-2">
-                    <x-heroicon-o-funnel class="size-5 text-brand-800" aria-hidden="true" /> Filter data
+                    <x-heroicon-o-funnel class="size-5 text-leaf-700" aria-hidden="true" /> Filter data
                     @if ($activeFilterCount > 0)
                         <span class="text-xs font-normal text-ink-muted">({{ $activeFilterCount }} aktif)</span>
                     @endif
@@ -124,7 +115,7 @@
                        @if($isActive) aria-current="true" @endif
                        @class([
                            'underline-offset-4 transition-colors',
-                           'font-semibold text-ink underline decoration-brand-800 decoration-2' => $isActive,
+                           'font-semibold text-ink underline decoration-leaf-500 decoration-2' => $isActive,
                            'text-ink-soft hover:text-ink hover:underline' => ! $isActive,
                        ])>{{ $label }}</a>
                 @endforeach
@@ -169,7 +160,7 @@
                         </p>
                     </div>
                     @if ($selectedCommodity?->image_url)
-                        <img src="{{ $selectedCommodity->image_url }}" alt="{{ display_name($selectedCommodity->name) }}" class="size-24 shrink-0 rounded-sm object-cover sm:size-28">
+                        <img src="{{ $selectedCommodity->image_url }}" alt="{{ display_name($selectedCommodity->name) }}" class="arch aspect-[4/5] w-24 shrink-0 object-cover ring-4 ring-white sm:w-28">
                     @endif
                 </div>
 
@@ -202,8 +193,8 @@
                 'kind' => 'harvested',
                 'title' => 'Hasil '.$termLower.' per '.$areaNoun,
                 'datasetLabel' => 'Hasil '.$termLower,
-                'color' => '#2d6a3e',
-                'hoverColor' => '#1f4d2c',
+                'color' => '#2e8b45',
+                'hoverColor' => '#1f6f35',
                 'emptyTitle' => 'Belum ada data '.$termLower,
                 'emptyText' => 'Tidak ada hasil '.$termLower.' yang tercatat untuk filter ini.',
             ])
@@ -214,8 +205,8 @@
                     'kind' => 'pending',
                     'title' => 'Perkiraan belum panen per '.$areaNoun,
                     'datasetLabel' => 'Perkiraan belum panen',
-                    'color' => '#4a78a8',
-                    'hoverColor' => '#365d86',
+                    'color' => '#1b93cf',
+                    'hoverColor' => '#0f6e9e',
                     'emptyTitle' => 'Tidak ada yang menunggu panen',
                     'emptyText' => 'Semua siklus pada filter ini sudah dipanen.',
                 ])

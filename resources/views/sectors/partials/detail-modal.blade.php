@@ -16,7 +16,7 @@
                 <div x-ref="body" @click="navigate($event)" :class="loading && 'opacity-40'" class="transition-opacity"></div>
                 <div x-show="loading" class="absolute inset-0 flex items-center justify-center" role="status">
                     <span class="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-ink-soft shadow ring-1 ring-rule">
-                        <svg class="size-4 animate-spin text-brand-800" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                        <svg class="size-4 animate-spin text-leaf-700" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
                         Memuat…
                     </span>
                 </div>

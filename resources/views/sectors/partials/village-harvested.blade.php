@@ -37,7 +37,7 @@
 
             @if ($hasMore)
                 <button type="button" @click="expanded = !expanded" :aria-expanded="expanded.toString()" aria-expanded="false"
-                        class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-800 hover:underline underline-offset-4">
+                        class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-leaf-700 hover:underline underline-offset-4">
                     <x-heroicon-m-chevron-down class="size-4 transition" ::class="expanded && 'rotate-180'" aria-hidden="true" />
                     <span x-text="expanded ? 'Sembunyikan rincian' : 'Lihat penyaluran & rincian'">Lihat penyaluran &amp; rincian</span>
                 </button>
@@ -62,7 +62,7 @@
                                             </tr>
                                             @foreach ($byGroup[$group->value] as $distribution)
                                                 <tr>
-                                                    <th scope="row" class="border-b border-rule py-2 pr-3 pl-3 text-left font-normal text-ink-soft">{{ $distribution->recipientCategory->name }}</th>
+                                                    <th scope="row" class="py-2 pr-3 pl-3 text-left font-normal text-ink-soft">{{ $distribution->recipientCategory->name }}</th>
                                                     <td class="num py-2 text-right">{{ $distribution->quantity !== null ? format_number($distribution->quantity) : '–' }}</td>
                                                     <td class="num py-2 text-right">{{ $distribution->household_count ?? '–' }}</td>
                                                     <td class="num py-2 text-right">{{ $distribution->person_count ?? '–' }}</td>

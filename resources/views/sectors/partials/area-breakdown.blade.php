@@ -40,12 +40,12 @@
         @if ($rows->isNotEmpty())
             <div class="-mb-px flex gap-4 text-sm" role="tablist" aria-label="Tampilan data">
                 <button type="button" role="tab" id="{{ $id }}-tab-chart" aria-controls="{{ $id }}-chart" :aria-selected="(view === 'chart').toString()" aria-selected="true"
-                        @click="view = 'chart'" :class="view === 'chart' ? 'border-brand-800 font-semibold text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
-                        class="border-b-[3px] border-brand-800 pb-3 font-semibold text-ink">
+                        @click="view = 'chart'" :class="view === 'chart' ? 'border-leaf-500 font-semibold text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
+                        class="border-b-[3px] border-leaf-500 pb-3 font-semibold text-ink">
                     Grafik
                 </button>
                 <button type="button" role="tab" id="{{ $id }}-tab-table" aria-controls="{{ $id }}-table" :aria-selected="(view === 'table').toString()" aria-selected="false"
-                        @click="view = 'table'" :class="view === 'table' ? 'border-brand-800 font-semibold text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
+                        @click="view = 'table'" :class="view === 'table' ? 'border-leaf-500 font-semibold text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
                         class="border-b-[3px] border-transparent pb-3 text-ink-muted">
                     Tabel
                 </button>

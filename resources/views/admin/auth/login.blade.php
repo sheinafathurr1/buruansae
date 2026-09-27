@@ -10,20 +10,22 @@
 </head>
 <body class="min-h-screen bg-white">
     <main class="grid min-h-screen lg:grid-cols-2">
-        <div class="relative hidden overflow-hidden bg-brand-900 lg:block">
-            <img src="{{ asset('images/hero/farm.webp') }}" alt="" class="absolute inset-0 size-full object-cover opacity-40">
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/60 to-transparent"></div>
-            <div class="relative flex h-full flex-col justify-end p-12 text-white">
-                <p class="text-sm font-semibold tracking-widest text-brand-200 uppercase">{{ config('buruansae.agency_short') }}</p>
-                <p class="mt-3 max-w-md text-3xl font-extrabold leading-tight">Dashboard pengelola data Buruan SAE</p>
-                <p class="mt-3 max-w-md text-brand-100">Catat data tanam, panen, dan penyaluran hasil kelompok. Data langsung tampil di portal publik.</p>
+        {{-- Identitas: langit, logo, lapisan air & tanah (seperti portal publik). --}}
+        <div class="relative hidden overflow-hidden bg-gradient-to-b from-sky-50 via-sky-100 to-sky-200 lg:flex lg:flex-col">
+            <div class="flex flex-1 flex-col items-center justify-center px-12 pt-12 pb-32 text-center">
+                <div class="arch flex w-56 items-center justify-center bg-white px-8 pt-10 pb-7 ring-8 ring-white/60">
+                    <img src="{{ asset('images/brand/logo-buruansae-utama.png') }}" alt="" width="770" height="898" class="w-full">
+                </div>
+                <p class="display mt-10 max-w-md text-3xl leading-tight">Dashboard pengelola data Buruan SAE</p>
+                <p class="mt-3 max-w-md text-ink-soft">Catat data tanam, panen, dan penyaluran hasil kelompok. Data langsung tampil di portal publik.</p>
             </div>
+            <x-strata class="absolute inset-x-0 bottom-0" end="#ffffff" />
         </div>
 
         <div class="flex items-center justify-center px-6 py-12 sm:px-12">
             <div class="w-full max-w-sm">
-                <a href="{{ route('home') }}" class="inline-block" aria-label="Ke portal publik Buruan SAE">
-                    <img src="{{ asset('images/brand/logo-buruansae-dkpp.png') }}" alt="Buruan SAE dan DKPP Kota Bandung" class="h-12 w-auto">
+                <a href="{{ route('home') }}" class="inline-block lg:hidden" aria-label="Ke portal publik Buruan SAE">
+                    <img src="{{ asset('images/brand/logo-horizontal.png') }}" alt="Buruan Saé Utama" width="898" height="360" class="h-14 w-auto">
                 </a>
                 <h1 class="mt-8 text-2xl font-extrabold tracking-tight text-slate-900">Masuk ke dashboard</h1>
                 <p class="mt-2 text-sm text-slate-600">Khusus pengelola dan penyuluh DKPP Kota Bandung.</p>

@@ -5,9 +5,9 @@
 @use('App\Enums\DistributionGroup')
 @php
     $colors = [
-        DistributionGroup::SelfConsumption->value => '#2a78d6',
-        DistributionGroup::Shared->value => '#eb6834',
-        DistributionGroup::Sold->value => '#1baf7a',
+        DistributionGroup::SelfConsumption->value => '#1b93cf',
+        DistributionGroup::Shared->value => '#d38b2b',
+        DistributionGroup::Sold->value => '#1f7d36',
     ];
     $groups = collect(DistributionGroup::cases())->map(function (DistributionGroup $group) use ($colors, $distribution) {
         $rows = $distribution->filter(fn ($row) => $row->group === $group)->values();
@@ -57,7 +57,7 @@
             </ul>
 
             @if ($shared->persons > 0 || $shared->households > 0)
-                <p class="mt-5 border-l-[3px] border-[#eb6834] pl-3 text-sm leading-6 text-ink-soft">
+                <p class="mt-5 border-l-[3px] border-soil-500 pl-3 text-sm leading-6 text-ink-soft">
                     <span>Hasil yang dibagikan menjangkau <strong>{{ format_number($shared->persons, 0) }} orang</strong>{{ $shared->households > 0 ? ' dari '.format_number($shared->households, 0).' kepala keluarga' : '' }}.</span>
                 </p>
             @endif
@@ -86,7 +86,7 @@
                             </tr>
                             @foreach ($group->rows as $row)
                                 <tr>
-                                    <th scope="row" class="border-b border-rule px-3 py-2.5 pl-6 text-left font-normal text-ink-soft">{{ $row->name }}</th>
+                                    <th scope="row" class="px-3 py-2.5 pl-6 text-left font-normal text-ink-soft">{{ $row->name }}</th>
                                     <td class="num py-2.5 text-right">{{ format_number($row->quantity) }}</td>
                                     <td class="num py-2.5 text-right">{{ $row->households ? format_number($row->households, 0) : '–' }}</td>
                                     <td class="num py-2.5 text-right">{{ $row->persons ? format_number($row->persons, 0) : '–' }}</td>
