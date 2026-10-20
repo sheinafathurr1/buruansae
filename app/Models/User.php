@@ -72,6 +72,11 @@ class User extends Authenticatable
         return $this->hasMany(Production::class, 'created_by');
     }
 
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

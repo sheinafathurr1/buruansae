@@ -7,6 +7,7 @@ app/Enums/PlantingCategory.php, InputType.php   PHP enum + label Indonesia
 app/Models/                                     12 model + User (username, role, is_active)
 database/migrations/2026_09_26_*                13 migration struktur baru
 database/migrations/2026_10_20_*                peran akun, kelompok binaan staf, pencatat data produksi
+database/migrations/2026_10_21_*                riwayat aktivitas pencatatan (activity_logs)
 database/seeders/SectorSeeder.php               8 sektor (data acuan)
 database/seeders/RecipientCategorySeeder.php    10 kategori penerima (data acuan)
 database/seeders/DemoSeeder.php                 data contoh untuk lokal/staging
@@ -54,10 +55,15 @@ Perbedaan dari paket `newdb/` asli:
 | `monthly_distribution_recaps` | Rekap distribusi bulanan per kelurahan |
 | `users` | Akun dashboard: `role` (`admin` / `staff`), `is_active`, `must_change_password` (kata sandi sementara dari admin), `last_login_at` |
 | `farmer_group_user` | Kelompok binaan staf (banyak ke banyak: satu kelompok boleh dipegang beberapa staf) |
+| `activity_logs` | Riwayat pencatatan per akun: `action` (catat/ubah data tanam, catat/ubah panen, hapus), sektor, produksi, kelompok, salinan nama komoditas & keterangan (mis. "8,5 kg") |
 
 `productions.created_by` / `updated_by` (→ `users`, kosong untuk data impor) mencatat siapa yang mengisi dan terakhir
 mengubah data. Bila akun dihapus nilainya menjadi NULL, tetapi dashboard hanya mengizinkan hapus akun yang belum pernah
 mencatat data.
+
+`activity_logs` diisi oleh `App\Services\ProductionRecorder` atas nama akun yang login (impor & seeder tidak
+tercatat). Nama komoditas dan keterangan disalin saat dicatat, jadi riwayat tetap terbaca walau datanya kemudian
+dihapus (`production_id` menjadi NULL).
 
 Relasi utama: `districts` → `villages` → `farmer_groups` → `productions` ← `commodities` ← `sectors`;
 `productions` → `distributions` ← `recipient_categories`.

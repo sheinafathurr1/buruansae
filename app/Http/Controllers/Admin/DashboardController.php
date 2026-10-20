@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ActivityAction;
 use App\Enums\SectorType;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\FarmerGroup;
 use App\Models\Production;
 use App\Models\User;
@@ -76,6 +78,11 @@ class DashboardController extends Controller
             return view('admin.dashboard', $data + [
                 'groupsWithoutStaff' => FarmerGroup::query()->doesntHave('staff')->count(),
                 'staffActivity' => $this->staffActivity($today, $monthStart),
+                'recentActivities' => ActivityLog::query()
+                    ->with(['user:id,name', 'farmerGroup:id,name,village_id', 'farmerGroup.village:id,name'])
+                    ->latest('id')
+                    ->limit(8)
+                    ->get(),
             ]);
         }
 
@@ -84,7 +91,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    /** Pemantauan admin: beban & keaktifan tiap staf aktif. */
+    /** Pemantauan admin: beban & kinerja tiap staf aktif bulan ini. */
     private function staffActivity(Carbon $today, string $monthStart): Collection
     {
         $assignedTo = fn () => DB::table('farmer_group_user')
@@ -94,14 +101,14 @@ class DashboardController extends Controller
         return User::query()
             ->where('role', UserRole::Staff)
             ->where('is_active', true)
-            ->withCount('farmerGroups')
+            ->withCount([
+                'farmerGroups',
+                'activityLogs as planted_this_month' => fn (Builder $q) => $q
+                    ->where('action', ActivityAction::PlantingCreated)->where('created_at', '>=', $monthStart),
+                'activityLogs as harvested_this_month' => fn (Builder $q) => $q
+                    ->where('action', ActivityAction::HarvestRecorded)->where('created_at', '>=', $monthStart),
+            ])
             ->addSelect([
-                // Data yang ia tambah atau ubah (termasuk catat panen) bulan ini.
-                'activity_this_month' => Production::query()
-                    ->selectRaw('COUNT(*)')
-                    ->where(fn (Builder $q) => $q
-                        ->where(fn (Builder $q) => $q->whereColumn('created_by', 'users.id')->where('created_at', '>=', $monthStart))
-                        ->orWhere(fn (Builder $q) => $q->whereColumn('updated_by', 'users.id')->where('updated_at', '>=', $monthStart))),
                 'late_count' => Production::query()
                     ->selectRaw('COUNT(*)')
                     ->whereNull('harvest_date')

@@ -128,7 +128,7 @@ class ProductionController extends Controller
     {
         $this->ensureBelongsToSector($sector, $production);
         Gate::authorize('delete', $production);
-        $this->recorder->delete($production);
+        $this->recorder->delete($sector, $production);
 
         return back()->with('success', 'Data '.strtolower($sector->label()).' berhasil dihapus.');
     }

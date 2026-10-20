@@ -40,6 +40,7 @@ Fitur sama dengan aplikasi CodeIgniter `buruansae-dashboard`, disesuaikan dengan
 | Data panen / produksi | `…/{id}/panen` | Tanggal panen, foto hasil, penyaluran per kategori (jumlah, KK, orang), harga jual. **Jumlah panen = total konsumsi pribadi + dibagikan + dijual** (sama dengan perubahan terakhir di aplikasi lama). Ikan/ternak: jumlah ekor. Buah: pemupukan |
 | Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, ketua, kontak, penyuluh, pendamping, lahan, status keaktifan, foto lahan & ketua, petugas (staf) yang mengurusnya |
 | Komoditas | `/admin/komoditas` | Tambah/ubah/hapus komoditas per sektor dengan durasi tanam dan gambar (gambar tampil di portal publik) |
+| Aktivitas petugas | `/admin/aktivitas` | Riwayat pencatatan (catat/ubah data tanam, catat/ubah panen, hapus) per akun, dengan filter petugas, jenis, dan tanggal, plus ringkasan per petugas: tanam dicatat, panen dicatat, perubahan, dihapus |
 | Pengguna & petugas | `/admin/pengguna` | Akun admin & staf: peran, status aktif, kata sandi sementara, kelompok binaan staf (cari, pilih per kecamatan) |
 | Profil | `/admin/profil` | Ubah nama, email, dan kata sandi sendiri |
 
@@ -47,17 +48,19 @@ Fitur sama dengan aplikasi CodeIgniter `buruansae-dashboard`, disesuaikan dengan
 
 | | Admin | Staf (pegawai DKPP / penyuluh) |
 |---|---|---|
-| Ringkasan | Seluruh kota, ditambah pemantauan petugas: kelompok tanpa petugas, data yang diisi tiap staf bulan ini, panen terlambat per staf | Hanya kelompok binaannya: daftar kelompok dengan status, siklus yang perlu dicatat panennya |
+| Ringkasan | Seluruh kota, ditambah pemantauan petugas (kelompok tanpa petugas; per staf: tanam & panen yang dicatat bulan ini, panen terlambat) dan aktivitas terbaru | Hanya kelompok binaannya: daftar kelompok dengan status, siklus yang perlu dicatat panennya |
 | Data tanam, panen, penyaluran | Semua kelompok | Hanya kelompok binaan; kelompok lain tidak terlihat |
 | Hapus data produksi | Semua | Hanya data yang ia catat sendiri |
 | Profil kelompok | Tambah, ubah, hapus | Ubah kelompok binaan, kecuali nama & wilayah (kelurahan, RW) |
-| Komoditas, Pengguna | Ya | Tidak ada akses |
+| Komoditas, Pengguna, Aktivitas petugas | Ya | Tidak ada akses |
 
 - Satu kelompok boleh dipegang beberapa staf. Hak akses mengikuti **penugasan saat ini**, bukan siapa yang dulu
   mencatat: petugas pengganti bisa melanjutkan dan memperbaiki data lama kelompok itu.
 - Pembatasan dicek di server (`app/Policies`, query yang dibatasi per peran, dan validasi pilihan kelompok), jadi
   mengganti ID di alamat URL atau mengirim form untuk kelompok lain ditolak (403).
-- Setiap data produksi mencatat **siapa yang mengisi dan terakhir mengubah** (`created_by`, `updated_by`).
+- Setiap data produksi mencatat **siapa yang mengisi dan terakhir mengubah** (`created_by`, `updated_by`), dan setiap
+  pencatatan masuk ke **riwayat aktivitas** (`activity_logs`) untuk mengukur kinerja petugas. Riwayat dimulai sejak fitur
+  ini dipasang; data impor dari aplikasi lama tidak punya riwayat.
 - Akun baru dan kata sandi yang disetel ulang admin bersifat **sementara**: pengguna wajib menggantinya sebelum
   bisa membuka halaman lain.
 - Akun yang sudah pernah mencatat data tidak bisa dihapus (agar riwayatnya jelas); nonaktifkan saja. Admin tidak bisa
@@ -133,7 +136,7 @@ jalankan `npm install` lalu `npm run dev` (selama mengembangkan) atau `npm run b
 php artisan test
 ```
 
-92 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
+98 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
 
 - **Portal**: perhitungan dashboard terhadap data yang totalnya dihitung manual (termasuk kelompok yang sudah dihapus
   & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman, API peta, header keamanan.
@@ -142,7 +145,8 @@ php artisan test
   pengosongan cache portal setelah data berubah.
 - **Peran**: staf tidak bisa melihat, mengisi, mengubah, atau menghapus data kelompok lain (termasuk lewat URL/form
   yang diubah), hanya menghapus data yang ia catat, tidak bisa mengubah nama/wilayah kelompok atau membuka menu admin;
-  akses mengikuti penugasan terbaru; menu Pengguna (kata sandi sementara, penugasan, admin tidak bisa mengunci diri).
+  akses mengikuti penugasan terbaru; menu Pengguna (kata sandi sementara, penugasan, admin tidak bisa mengunci diri);
+  riwayat aktivitas (setiap langkah tercatat atas nama pencatatnya, ringkasan & filter per petugas).
 
 Pengujian yang sama juga lolos di MariaDB 10.11.
 
@@ -230,7 +234,7 @@ app/Services/SectorDashboard.php    angka dashboard sektor publik (query agregat
 app/Services/HomeStatistics.php     angka ringkas beranda (di-cache, dikosongkan otomatis saat data berubah)
 app/Services/ProductionRecorder.php simpan data tanam, panen & penyaluran, hapus (dashboard pengelola)
 app/Http/Controllers/…              portal publik (Home, Sector, SectorVillage, News, Map, Api/Location)
-app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, User, Profile)
+app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, User, Activity, Profile)
 app/Policies/…                      hak akses per kelompok (staf hanya kelompok binaan); gate "admin" di AppServiceProvider
 app/Http/Requests/…                 validasi form (filter publik, login, form dashboard)
 app/Console/Commands/…              perintah buruansae:user (akun) & buruansae:bersihkan-kelompok (isian "0" data lama)

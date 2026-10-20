@@ -101,7 +101,7 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak bisa menghapus akun Anda sendiri.');
         }
 
-        $hasRecords = Production::query()
+        $hasRecords = $user->activityLogs()->exists() || Production::query()
             ->where('created_by', $user->id)
             ->orWhere('updated_by', $user->id)
             ->exists();

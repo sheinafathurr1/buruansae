@@ -39,10 +39,10 @@
             </button>
         </div>
 
-        <nav class="flex-1 space-y-6 overflow-y-auto px-3 pt-2 pb-6">
+        <nav class="sidebar-scroll flex-1 space-y-5 overflow-y-auto px-3 pt-2 pb-5">
             <div>
                 <a href="{{ route('admin.dashboard') }}" @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif
-                   class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold transition {{ $navLink(request()->routeIs('admin.dashboard')) }}">
+                   class="flex items-center gap-3 rounded-xl px-3 py-2 font-semibold transition {{ $navLink(request()->routeIs('admin.dashboard')) }}">
                     <x-heroicon-o-home class="size-5" aria-hidden="true" /> Ringkasan
                 </a>
             </div>
@@ -54,7 +54,7 @@
                         @php($active = request()->routeIs('admin.productions.*') && $currentSector === $case)
                         <li>
                             <a href="{{ route('admin.productions.index', $case) }}" @if($active) aria-current="page" @endif
-                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink($active) }}">
+                               class="flex items-center gap-3 rounded-xl px-3 py-1.5 font-medium transition {{ $navLink($active) }}">
                                 <span class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white p-1">
                                     <img src="{{ asset($case->image()) }}" alt="" class="max-h-full max-w-full object-contain">
                                 </span>
@@ -70,14 +70,14 @@
                 <ul class="space-y-0.5">
                     <li>
                         <a href="{{ route('admin.kelompok.index') }}" @if(request()->routeIs('admin.kelompok.*')) aria-current="page" @endif
-                           class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition {{ $navLink(request()->routeIs('admin.kelompok.*')) }}">
+                           class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.kelompok.*')) }}">
                             <x-heroicon-o-user-group class="size-5" aria-hidden="true" /> {{ $currentUser->isAdmin() ? 'Kelompok' : 'Kelompok binaan' }}
                         </a>
                     </li>
                     @can('admin')
                         <li>
                             <a href="{{ route('admin.komoditas.index') }}" @if(request()->routeIs('admin.komoditas.*')) aria-current="page" @endif
-                               class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition {{ $navLink(request()->routeIs('admin.komoditas.*')) }}">
+                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.komoditas.*')) }}">
                                 <x-heroicon-o-tag class="size-5" aria-hidden="true" /> Komoditas
                             </a>
                         </li>
@@ -87,11 +87,17 @@
 
             @can('admin')
                 <div>
-                    <p class="px-3 pb-2 text-[11px] font-bold tracking-widest text-brand-300 uppercase">Pengaturan</p>
+                    <p class="px-3 pb-2 text-[11px] font-bold tracking-widest text-brand-300 uppercase">Petugas</p>
                     <ul class="space-y-0.5">
                         <li>
+                            <a href="{{ route('admin.aktivitas.index') }}" @if(request()->routeIs('admin.aktivitas.*')) aria-current="page" @endif
+                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.aktivitas.*')) }}">
+                                <x-heroicon-o-clipboard-document-list class="size-5" aria-hidden="true" /> Aktivitas petugas
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('admin.pengguna.index') }}" @if(request()->routeIs('admin.pengguna.*')) aria-current="page" @endif
-                               class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition {{ $navLink(request()->routeIs('admin.pengguna.*')) }}">
+                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.pengguna.*')) }}">
                                 <x-heroicon-o-identification class="size-5" aria-hidden="true" /> Pengguna &amp; petugas
                             </a>
                         </li>

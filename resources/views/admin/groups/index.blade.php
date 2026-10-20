@@ -12,7 +12,12 @@
         @endcan
     </x-admin.page-header>
 
-    <form method="GET" @class(['card mb-6 grid gap-4 p-4 sm:grid-cols-2 lg:items-end', 'lg:grid-cols-[2fr_1.2fr_1fr_1.2fr_auto]' => $isAdmin, 'lg:grid-cols-[2fr_1.2fr_1fr_auto]' => ! $isAdmin]) role="search" aria-label="Cari kelompok">
+    <form method="GET" @class([
+        'card mb-6 grid gap-4 p-4 sm:grid-cols-2',
+        // Admin punya filter petugas: lima kolom baru muat di layar lebar.
+        'xl:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_minmax(9rem,1fr)_minmax(0,1.2fr)_auto] xl:items-end' => $isAdmin,
+        'lg:grid-cols-[2fr_1.2fr_1fr_auto] lg:items-end' => ! $isAdmin,
+    ]) role="search" aria-label="Cari kelompok">
         <div>
             <label for="q" class="form-label">Cari</label>
             <input type="search" id="q" name="q" value="{{ $search }}" class="form-control" placeholder="Nama kelompok, ketua, atau penyuluh">
@@ -106,17 +111,17 @@
                                         @forelse ($group->staff as $staff)
                                             <span class="block">{{ $staff->name }}</span>
                                         @empty
-                                            <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
+                                            <span class="inline-block rounded-full whitespace-nowrap bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
                                         @endforelse
                                     </td>
                                 @endif
                                 <td data-label="Status">
                                     @if ($group->is_active === true)
-                                        <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200">Aktif</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200">Aktif</span>
                                     @elseif ($group->is_active === false)
-                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Tidak aktif</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Tidak aktif</span>
                                     @else
-                                        <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum diketahui</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum diketahui</span>
                                     @endif
                                 </td>
                                 <td class="num text-right" data-label="Produksi">{{ format_number($group->productions_count, 0) }}</td>

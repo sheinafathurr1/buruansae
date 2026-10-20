@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Enums\ActivityAction;
 use App\Enums\InputType;
 use App\Enums\SectorType;
+use App\Models\ActivityLog;
 use App\Models\Commodity;
 use App\Models\Production;
 use App\Models\RecipientCategory;
+use App\Models\Sector;
+use App\Support\Format;
 use App\Support\ImageStore;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -19,6 +23,9 @@ use Illuminate\Support\Facades\DB;
  * "data panen" diisi terpisah. Jumlah panen = total seluruh penyaluran
  * (konsumsi pribadi + dibagikan + dijual), sesuai perubahan terakhir di
  * aplikasi lama.
+ *
+ * Setiap pencatatan masuk ke riwayat aktivitas (activity_logs) atas nama akun
+ * yang login, untuk memantau kinerja petugas.
  */
 class ProductionRecorder
 {
@@ -28,6 +35,7 @@ class ProductionRecorder
         return DB::transaction(function () use ($sector, $data) {
             $production = Production::create($this->productionAttributes($sector, $data));
             $this->syncSectorDetails($sector, $production, $data);
+            ActivityLog::record(ActivityAction::PlantingCreated, $sector, $production, $this->plantingDetail($sector, $production));
 
             return $production;
         });
@@ -39,6 +47,7 @@ class ProductionRecorder
         return DB::transaction(function () use ($sector, $production, $data) {
             $production->update($this->productionAttributes($sector, $data));
             $this->syncSectorDetails($sector, $production, $data);
+            ActivityLog::record(ActivityAction::PlantingUpdated, $sector, $production, $this->plantingDetail($sector, $production));
 
             return $production;
         });
@@ -49,9 +58,10 @@ class ProductionRecorder
     {
         $newImage = $photo ? ImageStore::store($photo, Production::IMAGE_DIRECTORY) : null;
         $oldImage = $production->image;
+        $action = $production->harvest_date === null ? ActivityAction::HarvestRecorded : ActivityAction::HarvestUpdated;
 
         try {
-            DB::transaction(function () use ($sector, $production, $data, $newImage) {
+            DB::transaction(function () use ($sector, $production, $data, $newImage, $action) {
                 $this->syncDistributions($sector, $production, $data['distributions'] ?? []);
 
                 if ($sector->tracksFertilizer()) {
@@ -70,6 +80,9 @@ class ProductionRecorder
                 }
 
                 $production->save();
+
+                $unit = Sector::query()->where('code', $sector->code())->value('harvest_unit');
+                ActivityLog::record($action, $sector, $production, Format::quantity($production->harvest_quantity, $unit));
             });
         } catch (\Throwable $e) {
             ImageStore::delete($newImage, Production::IMAGE_DIRECTORY);
@@ -84,12 +97,15 @@ class ProductionRecorder
         return $production;
     }
 
-    public function delete(Production $production): void
+    public function delete(SectorType $sector, Production $production): void
     {
         $image = $production->image;
 
-        // distributions, production_inputs, dan detail ikut terhapus (cascadeOnDelete).
-        $production->delete();
+        DB::transaction(function () use ($sector, $production) {
+            ActivityLog::record(ActivityAction::ProductionDeleted, $sector, $production, $this->plantingDetail($sector, $production));
+            // distributions, production_inputs, dan detail ikut terhapus (cascadeOnDelete).
+            $production->delete();
+        });
 
         ImageStore::delete($image, Production::IMAGE_DIRECTORY);
     }
@@ -102,6 +118,14 @@ class ProductionRecorder
         }
 
         return Carbon::parse($startDate)->addDays($growingDays)->toDateString();
+    }
+
+    /** Keterangan riwayat, mis. "120 tanaman". */
+    private function plantingDetail(SectorType $sector, Production $production): ?string
+    {
+        return $production->initial_quantity !== null
+            ? Format::quantity($production->initial_quantity, $sector->initialQuantityUnit())
+            : null;
     }
 
     private function productionAttributes(SectorType $sector, array $data): array

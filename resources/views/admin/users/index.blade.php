@@ -63,7 +63,7 @@
                                 </td>
                                 <td data-label="Peran">
                                     <span @class([
-                                        'rounded-full px-2.5 py-1 text-xs font-semibold',
+                                        'inline-block rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap',
                                         'bg-brand-950 text-white' => $item->isAdmin(),
                                         'bg-brand-50 text-brand-800 ring-1 ring-brand-200' => ! $item->isAdmin(),
                                     ])>{{ $item->role->label() }}</span>
@@ -72,7 +72,7 @@
                                     @if ($item->isAdmin())
                                         <span class="text-slate-500">Semua kelompok</span>
                                     @elseif ($item->farmer_groups_count === 0)
-                                        <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
                                     @else
                                         <a href="{{ route('admin.kelompok.index', ['petugas' => $item->id]) }}" class="num font-semibold text-brand-700 hover:underline">
                                             {{ format_number($item->farmer_groups_count, 0) }} kelompok
@@ -81,9 +81,9 @@
                                 </td>
                                 <td data-label="Status">
                                     @if ($item->is_active)
-                                        <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200">Aktif</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200">Aktif</span>
                                     @else
-                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Nonaktif</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Nonaktif</span>
                                     @endif
                                     @if ($item->must_change_password)
                                         <span class="mt-1.5 block text-xs text-amber-800">Belum ganti kata sandi sementara</span>

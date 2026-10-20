@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\SectorType;
+use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\CommodityController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -41,6 +42,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'password.
         ->except('show')
         ->parameters(['pengguna' => 'user'])
         ->middleware('can:admin');
+
+    Route::get('/aktivitas', ActivityController::class)->middleware('can:admin')->name('aktivitas.index');
 
     Route::prefix('produksi/{sector}')
         ->whereIn('sector', array_column(SectorType::cases(), 'value'))

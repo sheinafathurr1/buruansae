@@ -25,9 +25,12 @@
         <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5">
             <div>
                 <h2 id="petugas-title" class="text-base font-bold text-slate-900">Petugas</h2>
-                <p class="mt-0.5 text-sm text-slate-500">Staf aktif, jumlah kelompok binaannya, dan data yang mereka isi bulan {{ format_date($today, 'F') }}.</p>
+                <p class="mt-0.5 text-sm text-slate-600">Staf aktif, jumlah kelompok binaannya, dan pencatatan mereka bulan {{ format_date($today, 'F') }}.</p>
             </div>
-            <a href="{{ route('admin.pengguna.index') }}" class="btn btn-secondary px-3 py-2">Kelola pengguna</a>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.aktivitas.index') }}" class="btn btn-secondary px-3 py-2">Rincian kinerja</a>
+                <a href="{{ route('admin.pengguna.index') }}" class="btn btn-secondary px-3 py-2">Kelola pengguna</a>
+            </div>
         </header>
         @if ($groupsWithoutStaff > 0)
             <p class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-100 bg-amber-50/70 px-5 py-3 text-sm text-amber-900">
@@ -47,7 +50,8 @@
                         <tr>
                             <th scope="col">Petugas</th>
                             <th scope="col" class="text-right">Kelompok binaan</th>
-                            <th scope="col" class="text-right">Data diisi bulan ini</th>
+                            <th scope="col" class="text-right">Tanam dicatat</th>
+                            <th scope="col" class="text-right">Panen dicatat</th>
                             <th scope="col" class="text-right">Terlambat panen</th>
                             <th scope="col">Terakhir masuk</th>
                         </tr>
@@ -63,11 +67,14 @@
                                     @if ($staff->farmer_groups_count > 0)
                                         <a href="{{ route('admin.kelompok.index', ['petugas' => $staff->id]) }}" class="font-semibold text-brand-700 hover:underline">{{ format_number($staff->farmer_groups_count, 0) }}</a>
                                     @else
-                                        <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
                                     @endif
                                 </td>
-                                <td @class(['num text-right', 'text-slate-400' => (int) $staff->activity_this_month === 0]) data-label="Data diisi bulan ini">
-                                    {{ format_number($staff->activity_this_month, 0) }}
+                                <td @class(['num text-right', 'text-slate-400' => (int) $staff->planted_this_month === 0]) data-label="Tanam dicatat bulan ini">
+                                    {{ format_number($staff->planted_this_month, 0) }}
+                                </td>
+                                <td @class(['num text-right', 'text-slate-400' => (int) $staff->harvested_this_month === 0]) data-label="Panen dicatat bulan ini">
+                                    {{ format_number($staff->harvested_this_month, 0) }}
                                 </td>
                                 <td @class(['num text-right', 'font-semibold text-red-700' => $staff->late_count > 0]) data-label="Terlambat panen">
                                     {{ format_number($staff->late_count, 0) }}
@@ -80,6 +87,23 @@
                     </tbody>
                 </table>
             </div>
+        @endif
+    </section>
+
+    <section aria-labelledby="aktivitas-title" class="card mt-10">
+        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5">
+            <div>
+                <h2 id="aktivitas-title" class="text-base font-bold text-slate-900">Aktivitas terbaru</h2>
+                <p class="mt-0.5 text-sm text-slate-600">Pencatatan data tanam dan panen oleh admin maupun staf.</p>
+            </div>
+            <a href="{{ route('admin.aktivitas.index') }}" class="btn btn-secondary px-3 py-2">Lihat semua</a>
+        </header>
+        @if ($recentActivities->isEmpty())
+            <x-empty-state title="Belum ada aktivitas" icon="heroicon-o-clipboard-document-list" compact>
+                Pencatatan data tanam dan panen dari dashboard akan muncul di sini.
+            </x-empty-state>
+        @else
+            @include('admin.partials.activity-list', ['activities' => $recentActivities])
         @endif
     </section>
 
