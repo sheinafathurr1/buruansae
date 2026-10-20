@@ -125,11 +125,16 @@ Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
    ```
 4. **Cek hasil verifikasi** di akhir output: setiap tabel harus `baris_berbeda = 0`, dan query distribusi tidak
    mengembalikan baris sama sekali.
-5. **Setel ulang password** (lihat di bawah), lalu `php artisan cache:clear` supaya angka beranda & peta diperbarui.
-6. **Unggah ke hosting:** export database `buruansae`, lalu import ke database **baru yang masih kosong** di hosting.
+5. **Bersihkan isian "0"** di data kelompok (sesudah verifikasi, karena verifikasi membandingkan dengan data lama apa
+   adanya). Lihat [Isian "0" di data kelompok](#isian-0-di-data-kelompok).
+   ```bash
+   php artisan buruansae:bersihkan-kelompok
+   ```
+6. **Setel ulang password** (lihat di bawah), lalu `php artisan cache:clear` supaya angka beranda & peta diperbarui.
+7. **Unggah ke hosting:** export database `buruansae`, lalu import ke database **baru yang masih kosong** di hosting.
    Jangan import ke database aplikasi lama: nama tabel `users` dan `migrations` sama, dan dump berisi
    `DROP TABLE IF EXISTS`.
-7. **File gambar.** Kolom database hanya menyimpan nama file. Foto lama sudah ada di repo (lihat
+8. **File gambar.** Kolom database hanya menyimpan nama file. Foto lama sudah ada di repo (lihat
    [Gambar dari aplikasi lama](#gambar-dari-aplikasi-lama)); setelah deploy, jalankan sekali
    `database/sql/rapikan_gambar_lama.sql` di database hosting, lalu `php artisan storage:link`.
 
@@ -194,6 +199,25 @@ produksi tetapi belum ada di master (mis. SINGKONG di sektor sayur) ditambahkan 
 Angka lama bertipe FLOAT (1.2 tersimpan 1.2000000477), jadi verifikasi skrip impor membandingkan setelah angka lama
 dikonversi ke tipe DECIMAL kolom barunya. Skrip persiapan memastikan konversi itu tidak membulatkan nilai apa pun.
 
+### Isian "0" di data kelompok
+
+Aplikasi lama mengisi `0`, `00`, atau `-` sebagai pengganti "kosong". Di data produksi terakhir: 41 kelompok berisi `0`
+sekaligus di nama ketua, kontak, luas & status lahan, dan tautan; beberapa kelompok lain berisi `-`/`00` di ketua,
+kontak, atau status lahan; dua tautan diawali spasi. Tautan `0` dan tautan berspasi ditolak validasi saat profil
+kelompok disimpan dari dashboard.
+
+Impor menyalin isian itu apa adanya (supaya verifikasi baris per baris tetap berlaku), lalu perintah berikut
+mengosongkannya (NULL) dan merapikan spasi di awal/akhir:
+
+```bash
+php artisan buruansae:bersihkan-kelompok --dry-run   # lihat jumlahnya dulu, tanpa mengubah data
+php artisan buruansae:bersihkan-kelompok             # jalankan (minta konfirmasi; --force untuk melewatinya)
+```
+
+Yang dibersihkan hanya kolom opsional: nama ketua, nomor kontak, status lahan, tautan, dan luas lahan `0` m². Nama
+kelompok, penyuluh, pendamping, dan `updated_at` tidak diubah. Aman dijalankan berulang dan juga di database yang
+sudah berjalan di hosting.
+
 ### Password lama tidak bisa dipakai
 
 Myth/Auth menyimpan `bcrypt(base64(sha384(password)))`, sedangkan Laravel memakai `bcrypt(password)`. Hash lama tetap
@@ -214,6 +238,3 @@ Aplikasi lama tidak membedakan hak akses, jadi semua akun hasil impor menjadi **
   Hentikan input di aplikasi lama sebelum impor terakhir, lalu gunakan dashboard `/admin` ini.
 - **Wilayah.** Kecamatan & kelurahan (termasuk koordinat peta) berasal dari impor data lama; dashboard belum punya
   menu untuk mengubahnya.
-- **Isian "0" di data kelompok.** 41 kelompok lama berisi `0` sebagai pengganti "kosong" di nama ketua, kontak, luas
-  & status lahan, dan tautan. Impor menyalinnya apa adanya. Tautan `0` ditolak validasi saat profil kelompok itu
-  disimpan, jadi kolomnya perlu dikosongkan (atau seluruh isian `0` dibersihkan sekaligus).

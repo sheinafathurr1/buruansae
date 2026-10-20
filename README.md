@@ -133,7 +133,7 @@ jalankan `npm install` lalu `npm run dev` (selama mengembangkan) atau `npm run b
 php artisan test
 ```
 
-89 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
+92 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
 
 - **Portal**: perhitungan dashboard terhadap data yang totalnya dihitung manual (termasuk kelompok yang sudah dihapus
   & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman, API peta, header keamanan.
@@ -201,6 +201,8 @@ php artisan up
 - Tidak perlu `npm`: hasil build tampilan (`public/build`) ikut di-commit.
 - Saat pertama memperbarui ke versi dengan peran admin/staf, `migrate` menjadikan **semua akun yang sudah ada admin**
   (sama seperti hak akses sebelumnya). Setelah itu buat akun staf dan kelompok binaannya dari menu Pengguna & petugas.
+- Database hasil impor data lama yang belum dibersihkan: jalankan sekali `php artisan buruansae:bersihkan-kelompok`
+  (lihat [`docs/DATABASE.md`](docs/DATABASE.md#isian-0-di-data-kelompok)).
 - `git reset --hard` membuang perubahan file yang tidak di-commit di server. Isi `.env`, `storage/` (unggahan), dan
   `vendor/` tidak ikut git, jadi aman.
 - Jika memakai fitur Git di hPanel Hostinger (deploy otomatis), jalankan tetap perintah `composer install` sampai
@@ -215,6 +217,7 @@ Ringkasnya:
 mysql -u root buruansae_lama < database/sql/persiapan_data_lama.sql   # di salinan database lama
 php artisan migrate:fresh --seed
 mysql -u root buruansae < database/sql/import_data_lama.sql
+php artisan buruansae:bersihkan-kelompok     # kosongkan isian "0" / "-" dari aplikasi lama
 php artisan cache:clear
 ```
 
@@ -230,7 +233,7 @@ app/Http/Controllers/…              portal publik (Home, Sector, SectorVillage
 app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, User, Profile)
 app/Policies/…                      hak akses per kelompok (staf hanya kelompok binaan); gate "admin" di AppServiceProvider
 app/Http/Requests/…                 validasi form (filter publik, login, form dashboard)
-app/Console/Commands/ManageUser.php perintah buruansae:user
+app/Console/Commands/…              perintah buruansae:user (akun) & buruansae:bersihkan-kelompok (isian "0" data lama)
 app/Support/…                       format angka/tanggal, penyimpanan foto, cache portal
 routes/web.php, admin.php, api.php  rute portal, dashboard (/admin), dan API
 config/buruansae.php                kontak DKPP & pengaturan peta
