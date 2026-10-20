@@ -1,11 +1,18 @@
-<x-layouts.admin title="Kelompok">
-    <x-admin.page-header title="Kelompok" description="Data kelompok Buruan SAE beserta wilayah, penyuluh, dan pendampingnya.">
-        <x-slot:actions>
-            <a href="{{ route('admin.kelompok.create') }}" class="btn btn-primary"><x-heroicon-m-plus class="size-4" aria-hidden="true" /> Tambah kelompok</a>
-        </x-slot:actions>
+@php
+    $isAdmin = auth()->user()->isAdmin();
+    $filtered = $search !== '' || $districtId || $status || $staffFilter !== '';
+@endphp
+<x-layouts.admin :title="$isAdmin ? 'Kelompok' : 'Kelompok binaan'">
+    <x-admin.page-header :title="$isAdmin ? 'Kelompok' : 'Kelompok binaan'"
+                         :description="$isAdmin ? 'Data kelompok Buruan SAE beserta wilayah, penyuluh, pendamping, dan petugasnya.' : 'Kelompok yang ditugaskan kepada Anda. Hubungi admin untuk menambah atau memindahkan kelompok.'">
+        @can('create', App\Models\FarmerGroup::class)
+            <x-slot:actions>
+                <a href="{{ route('admin.kelompok.create') }}" class="btn btn-primary"><x-heroicon-m-plus class="size-4" aria-hidden="true" /> Tambah kelompok</a>
+            </x-slot:actions>
+        @endcan
     </x-admin.page-header>
 
-    <form method="GET" class="card mb-6 grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1.2fr_1fr_auto] lg:items-end" role="search" aria-label="Cari kelompok">
+    <form method="GET" @class(['card mb-6 grid gap-4 p-4 sm:grid-cols-2 lg:items-end', 'lg:grid-cols-[2fr_1.2fr_1fr_1.2fr_auto]' => $isAdmin, 'lg:grid-cols-[2fr_1.2fr_1fr_auto]' => ! $isAdmin]) role="search" aria-label="Cari kelompok">
         <div>
             <label for="q" class="form-label">Cari</label>
             <input type="search" id="q" name="q" value="{{ $search }}" class="form-control" placeholder="Nama kelompok, ketua, atau penyuluh">
@@ -28,9 +35,21 @@
                 <option value="unknown" @selected($status === 'unknown')>Belum diketahui</option>
             </select>
         </div>
+        @if ($isAdmin)
+            <div>
+                <label for="petugas" class="form-label">Petugas</label>
+                <select id="petugas" name="petugas" class="form-control" aria-label="Petugas" data-searchable>
+                    <option value="">Semua petugas</option>
+                    <option value="none" @selected($staffFilter === 'none')>Belum ada petugas</option>
+                    @foreach ($staffUsers as $staff)
+                        <option value="{{ $staff->id }}" @selected($staffFilter === (string) $staff->id)>{{ $staff->name }}{{ $staff->is_active ? '' : ' (nonaktif)' }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
         <div class="flex gap-2">
             <button type="submit" class="btn btn-primary flex-1"><x-heroicon-o-magnifying-glass class="size-4" aria-hidden="true" /> Cari</button>
-            @if ($search !== '' || $districtId || $status)
+            @if ($filtered)
                 <a href="{{ route('admin.kelompok.index') }}" class="btn btn-secondary">Atur ulang</a>
             @endif
         </div>
@@ -39,7 +58,13 @@
     <div class="card">
         @if ($groups->isEmpty())
             <x-empty-state title="Belum ada kelompok" icon="heroicon-o-user-group">
-                {{ $search !== '' || $districtId || $status ? 'Tidak ada kelompok yang cocok dengan pencarian.' : 'Tambahkan kelompok pertama.' }}
+                @if ($filtered)
+                    Tidak ada kelompok yang cocok dengan pencarian.
+                @elseif ($isAdmin)
+                    Tambahkan kelompok pertama.
+                @else
+                    Belum ada kelompok yang ditugaskan kepada Anda. Hubungi admin DKPP.
+                @endif
             </x-empty-state>
         @else
             <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Tabel kelompok">
@@ -49,6 +74,9 @@
                             <th scope="col">Kelompok</th>
                             <th scope="col">Wilayah</th>
                             <th scope="col">Penyuluh / pendamping</th>
+                            @if ($isAdmin)
+                                <th scope="col">Petugas</th>
+                            @endif
                             <th scope="col">Status</th>
                             <th scope="col" class="text-right">Produksi</th>
                             <th scope="col"><span class="sr-only">Aksi</span></th>
@@ -73,6 +101,15 @@
                                     {{ $group->extension_officer ?: '–' }}
                                     <span class="block text-xs text-slate-500">{{ $group->facilitator ?: '–' }}</span>
                                 </td>
+                                @if ($isAdmin)
+                                    <td data-label="Petugas">
+                                        @forelse ($group->staff as $staff)
+                                            <span class="block">{{ $staff->name }}</span>
+                                        @empty
+                                            <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
+                                        @endforelse
+                                    </td>
+                                @endif
                                 <td data-label="Status">
                                     @if ($group->is_active === true)
                                         <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200">Aktif</span>
@@ -87,10 +124,12 @@
                                     <a href="{{ route('admin.kelompok.edit', $group) }}" class="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50">
                                         <x-heroicon-o-pencil-square class="size-4" aria-hidden="true" /> Ubah<span class="sr-only"> {{ $group->name }}</span>
                                     </a>
-                                    <x-admin.delete-button :action="route('admin.kelompok.destroy', $group)"
-                                        :confirm="'Hapus kelompok '.$group->name.'? Data produksinya tetap disimpan tetapi tidak lagi dihitung di portal publik.'">
-                                        Hapus<span class="sr-only"> {{ $group->name }}</span>
-                                    </x-admin.delete-button>
+                                    @can('delete', $group)
+                                        <x-admin.delete-button :action="route('admin.kelompok.destroy', $group)"
+                                            :confirm="'Hapus kelompok '.$group->name.'? Data produksinya tetap disimpan tetapi tidak lagi dihitung di portal publik.'">
+                                            Hapus<span class="sr-only"> {{ $group->name }}</span>
+                                        </x-admin.delete-button>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

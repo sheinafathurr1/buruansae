@@ -1,4 +1,4 @@
-@foreach (['success' => ['bg-brand-50 text-brand-900 ring-brand-200', 'check-circle', 'status'], 'error' => ['bg-red-50 text-red-900 ring-red-200', 'exclamation-triangle', 'alert'], 'status' => ['bg-blue-50 text-blue-900 ring-blue-200', 'information-circle', 'status']] as $key => [$tone, $icon, $role])
+@foreach (['success' => ['bg-brand-50 text-brand-900 ring-brand-200', 'check-circle', 'status'], 'error' => ['bg-red-50 text-red-900 ring-red-200', 'exclamation-triangle', 'alert'], 'warning' => ['bg-amber-50 text-amber-900 ring-amber-200', 'exclamation-triangle', 'alert'], 'status' => ['bg-blue-50 text-blue-900 ring-blue-200', 'information-circle', 'status']] as $key => [$tone, $icon, $role])
     @if (session($key))
         <div x-data="{ show: true }" x-show="show" role="{{ $role }}" class="mb-6 flex items-start gap-3 rounded-2xl p-4 text-sm ring-1 {{ $tone }}">
             <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-5 shrink-0" aria-hidden="true" />

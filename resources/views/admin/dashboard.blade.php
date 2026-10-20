@@ -21,84 +21,59 @@
         </x-stat-tile>
     </section>
 
-    <section aria-labelledby="sektor-title" class="mt-10">
-        <h2 id="sektor-title" class="text-lg font-bold text-slate-900">Input data per sektor</h2>
-        <ul class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            @foreach ($sectors as $item)
-                <li class="card flex flex-col p-4">
-                    <div class="flex items-center gap-3">
-                        <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 p-1.5 ring-1 ring-brand-100">
-                            <img src="{{ asset($item->type->image()) }}" alt="" class="max-h-full max-w-full object-contain">
-                        </span>
-                        <h3 class="font-bold text-slate-900">{{ $item->type->label() }}</h3>
-                    </div>
-                    <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
-                        <div class="rounded-xl bg-slate-50 px-1 py-2">
-                            <dt class="text-[11px] font-medium text-slate-500">Berjalan</dt>
-                            <dd class="num text-base font-bold text-slate-900">{{ format_number($item->running, 0) }}</dd>
-                        </div>
-                        <div @class(['rounded-xl px-1 py-2', 'bg-red-50' => $item->late > 0, 'bg-slate-50' => $item->late === 0])>
-                            <dt class="text-[11px] font-medium text-slate-600">Terlambat</dt>
-                            <dd @class(['num text-base font-bold', 'text-red-700' => $item->late > 0, 'text-slate-900' => $item->late === 0])>{{ format_number($item->late, 0) }}</dd>
-                        </div>
-                        <div class="rounded-xl bg-slate-50 px-1 py-2">
-                            <dt class="text-[11px] font-medium text-slate-500">Panen bln ini</dt>
-                            <dd class="num text-base font-bold text-slate-900">{{ format_number($item->harvested_this_month, 0) }}</dd>
-                        </div>
-                    </dl>
-                    <div class="mt-4 flex gap-2">
-                        <a href="{{ route('admin.productions.index', $item->type) }}" class="btn btn-secondary flex-1 px-3 py-2">Lihat data</a>
-                        <a href="{{ route('admin.productions.create', $item->type) }}" class="btn btn-primary px-3 py-2" title="Tambah data {{ strtolower($item->type->label()) }}">
-                            <x-heroicon-m-plus class="size-4" aria-hidden="true" /><span class="sr-only">Tambah data {{ strtolower($item->type->label()) }}</span>
-                        </a>
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-    </section>
-
-    <section aria-labelledby="terlambat-title" class="card mt-10">
+    <section aria-labelledby="petugas-title" class="card mt-10">
         <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5">
             <div>
-                <h2 id="terlambat-title" class="text-base font-bold text-slate-900">Perlu dicatat panennya</h2>
-                <p class="mt-0.5 text-sm text-slate-500">Siklus yang perkiraan tanggal panennya sudah lewat, dari yang paling lama.</p>
+                <h2 id="petugas-title" class="text-base font-bold text-slate-900">Petugas</h2>
+                <p class="mt-0.5 text-sm text-slate-500">Staf aktif, jumlah kelompok binaannya, dan data yang mereka isi bulan {{ format_date($today, 'F') }}.</p>
             </div>
+            <a href="{{ route('admin.pengguna.index') }}" class="btn btn-secondary px-3 py-2">Kelola pengguna</a>
         </header>
-        @if ($lateProductions->isEmpty())
-            <x-empty-state title="Tidak ada siklus yang terlambat panen" icon="heroicon-o-check-circle" compact />
+        @if ($groupsWithoutStaff > 0)
+            <p class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-100 bg-amber-50/70 px-5 py-3 text-sm text-amber-900">
+                <x-heroicon-o-exclamation-triangle class="size-5 shrink-0" aria-hidden="true" />
+                <span class="flex-1"><span class="font-semibold">{{ format_number($groupsWithoutStaff, 0) }} kelompok</span> belum punya petugas.</span>
+                <a href="{{ route('admin.kelompok.index', ['petugas' => 'none']) }}" class="font-semibold underline">Lihat &amp; tugaskan</a>
+            </p>
+        @endif
+        @if ($staffActivity->isEmpty())
+            <x-empty-state title="Belum ada akun staf" icon="heroicon-o-identification" compact>
+                <a href="{{ route('admin.pengguna.create') }}" class="font-semibold text-brand-700 underline">Buat akun staf</a> lalu pilih kelompok binaannya.
+            </x-empty-state>
         @else
-            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Tabel siklus terlambat panen">
-                <table class="table-base">
+            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Tabel aktivitas petugas">
+                <table class="table-base table-stack">
                     <thead>
                         <tr>
-                            <th scope="col">Komoditas</th>
-                            <th scope="col">Kelompok</th>
-                            <th scope="col">Perkiraan panen</th>
-                            <th scope="col"><span class="sr-only">Aksi</span></th>
+                            <th scope="col">Petugas</th>
+                            <th scope="col" class="text-right">Kelompok binaan</th>
+                            <th scope="col" class="text-right">Data diisi bulan ini</th>
+                            <th scope="col" class="text-right">Terlambat panen</th>
+                            <th scope="col">Terakhir masuk</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($lateProductions as $production)
-                            @php($type = \App\Enums\SectorType::fromCode($production->commodity->sector->code))
+                        @foreach ($staffActivity as $staff)
                             <tr>
-                                <td>
-                                    <span class="font-semibold text-slate-900">{{ display_name($production->commodity->name) }}</span>
-                                    <span class="block text-xs text-slate-500">{{ $type?->label() }}</span>
+                                <td data-label="Petugas">
+                                    <a href="{{ route('admin.pengguna.edit', $staff) }}" class="font-semibold text-slate-900 hover:underline">{{ $staff->name }}</a>
+                                    <span class="block text-xs text-slate-500">{{ $staff->username }}</span>
                                 </td>
-                                <td>
-                                    {{ $production->farmerGroup->name }}
-                                    <span class="block text-xs text-slate-500">Kel. {{ display_name($production->farmerGroup->village?->name) }}</span>
-                                </td>
-                                <td class="whitespace-nowrap">
-                                    {{ format_date($production->estimated_harvest_date) }}
-                                    <span class="block text-xs text-red-700">{{ (int) $production->estimated_harvest_date->diffInDays($today) }} hari lalu</span>
-                                </td>
-                                <td class="text-right">
-                                    @if ($type)
-                                        <a href="{{ route('admin.productions.harvest.edit', [$type, $production]) }}" class="btn btn-primary px-3 py-1.5 whitespace-nowrap">
-                                            Catat {{ strtolower($type->harvestTerm()) }}
-                                        </a>
+                                <td class="num text-right" data-label="Kelompok binaan">
+                                    @if ($staff->farmer_groups_count > 0)
+                                        <a href="{{ route('admin.kelompok.index', ['petugas' => $staff->id]) }}" class="font-semibold text-brand-700 hover:underline">{{ format_number($staff->farmer_groups_count, 0) }}</a>
+                                    @else
+                                        <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
                                     @endif
+                                </td>
+                                <td @class(['num text-right', 'text-slate-400' => (int) $staff->activity_this_month === 0]) data-label="Data diisi bulan ini">
+                                    {{ format_number($staff->activity_this_month, 0) }}
+                                </td>
+                                <td @class(['num text-right', 'font-semibold text-red-700' => $staff->late_count > 0]) data-label="Terlambat panen">
+                                    {{ format_number($staff->late_count, 0) }}
+                                </td>
+                                <td class="whitespace-nowrap" data-label="Terakhir masuk">
+                                    {{ $staff->last_login_at ? format_date($staff->last_login_at, 'j M Y, H.i') : 'Belum pernah' }}
                                 </td>
                             </tr>
                         @endforeach
@@ -107,4 +82,7 @@
             </div>
         @endif
     </section>
+
+    @include('admin.partials.dashboard-sectors')
+    @include('admin.partials.dashboard-late')
 </x-layouts.admin>

@@ -2,16 +2,20 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * Membuat akun pengelola atau menyetel ulang kata sandinya.
+ * Membuat akun pengelola atau menyetel ulang kata sandinya. Akun baru dari
+ * perintah ini menjadi admin (untuk akun pertama); akun staf sebaiknya dibuat
+ * dari menu Pengguna di dashboard.
  *
  *     php artisan buruansae:user admin --email=admin@bandung.go.id --name="Admin DKPP"
  *     php artisan buruansae:user admin            # akun sudah ada → setel ulang kata sandi
+ *     php artisan buruansae:user budi --role=staff
  *     php artisan buruansae:user admin --deactivate
  */
 class ManageUser extends Command
@@ -21,6 +25,7 @@ class ManageUser extends Command
         {--email= : Email (wajib untuk akun baru)}
         {--name= : Nama tampilan}
         {--password= : Kata sandi (jika kosong akan ditanyakan)}
+        {--role= : admin atau staff (akun baru: admin)}
         {--deactivate : Nonaktifkan akun}
         {--activate : Aktifkan kembali akun}';
 
@@ -36,6 +41,14 @@ class ManageUser extends Command
             $this->info("Akun {$username} ".($user->is_active ? 'diaktifkan.' : 'dinonaktifkan.'));
 
             return self::SUCCESS;
+        }
+
+        $role = $this->option('role');
+
+        if ($role !== null && UserRole::tryFrom($role) === null) {
+            $this->error('Peran harus admin atau staff.');
+
+            return self::FAILURE;
         }
 
         $email = $this->option('email') ?? $user?->email;
@@ -63,6 +76,7 @@ class ManageUser extends Command
                 'password' => $password,
                 'email' => $this->option('email'),
                 'name' => $this->option('name'),
+                'role' => $role,
             ]));
             $this->info("Kata sandi akun {$username} berhasil diperbarui.");
         } else {
@@ -71,6 +85,7 @@ class ManageUser extends Command
                 'username' => $username,
                 'email' => $email,
                 'password' => $password,
+                'role' => $role ?? UserRole::Admin->value,
                 'is_active' => true,
             ]);
             $this->info("Akun {$username} berhasil dibuat.");

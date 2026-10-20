@@ -435,9 +435,10 @@ ORDER BY r.id_distribusi;
 --    Hash password Myth/Auth = bcrypt(base64(sha384(password))), sedangkan
 --    Laravel = bcrypt(password). Hash lama disalin apa adanya, tapi TIDAK BISA
 --    dipakai login di Laravel — setel ulang password tiap akun (lihat README).
+--    Aplikasi lama tidak membedakan hak akses, jadi semua akun menjadi admin.
 -- -----------------------------------------------------------------------------
-INSERT INTO `users` (id, name, username, email, password, is_active, created_at, updated_at)
-SELECT id, COALESCE(username, email), username, email, password_hash, COALESCE(active, 1), created_at, updated_at
+INSERT INTO `users` (id, name, username, role, email, password, is_active, created_at, updated_at)
+SELECT id, COALESCE(username, email), username, 'admin', email, password_hash, COALESCE(active, 1), created_at, updated_at
 FROM `buruansae_lama`.`users`
 WHERE deleted_at IS NULL
 ORDER BY id;

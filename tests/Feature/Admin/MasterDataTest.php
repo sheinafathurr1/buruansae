@@ -21,7 +21,7 @@ class MasterDataTest extends TestCase
     {
         parent::setUp();
         Storage::fake('public');
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_group_list_and_search(): void

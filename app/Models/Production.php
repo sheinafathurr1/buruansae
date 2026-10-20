@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 /** Satu siklus produksi (semua sektor) */
 class Production extends Model
@@ -47,6 +48,16 @@ class Production extends Model
 
     protected static function booted(): void
     {
+        // Jejak pencatat: diisi dari akun yang login (kosong untuk impor/seed).
+        static::creating(function (Production $production) {
+            $production->created_by ??= Auth::id();
+            $production->updated_by ??= Auth::id();
+        });
+        static::updating(function (Production $production) {
+            if (Auth::check()) {
+                $production->updated_by = Auth::id();
+            }
+        });
         static::saved(fn () => PublicDataCache::flush());
         static::deleted(fn () => PublicDataCache::flush());
     }
@@ -59,6 +70,16 @@ class Production extends Model
     public function commodity(): BelongsTo
     {
         return $this->belongsTo(Commodity::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function editor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function distributions(): HasMany
@@ -79,6 +100,14 @@ class Production extends Model
     public function seedlingDetail(): HasOne
     {
         return $this->hasOne(SeedlingDetail::class);
+    }
+
+    /** Data produksi milik kelompok yang boleh dikelola $user. */
+    public function scopeManagedBy(Builder $query, User $user): void
+    {
+        if (! $user->isAdmin()) {
+            $query->whereIn($query->qualifyColumn('farmer_group_id'), $user->assignedGroupIdsQuery());
+        }
     }
 
     /** Production::inSector('SAYUR')->get() */

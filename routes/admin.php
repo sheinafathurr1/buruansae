@@ -8,11 +8,13 @@ use App\Http\Controllers\Admin\FarmerGroupController;
 use App\Http\Controllers\Admin\HarvestController;
 use App\Http\Controllers\Admin\ProductionController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
 | Dashboard pengelola (pengganti aplikasi CodeIgniter buruansae-dashboard).
-| Semua halaman di bawah /admin wajib login dengan akun aktif.
+| Semua halaman di bawah /admin wajib login dengan akun aktif. Admin mengelola
+| semua data; staf hanya kelompok binaannya (dicek di app/Policies).
 */
 
 Route::middleware('guest')->group(function () {
@@ -21,7 +23,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/admin/masuk', [LoginController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'password.changed'])->group(function () {
     Route::post('/keluar', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/', DashboardController::class)->name('dashboard');
@@ -32,7 +34,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
 
     Route::resource('komoditas', CommodityController::class)
         ->except('show')
-        ->parameters(['komoditas' => 'commodity']);
+        ->parameters(['komoditas' => 'commodity'])
+        ->middleware('can:admin');
+
+    Route::resource('pengguna', UserController::class)
+        ->except('show')
+        ->parameters(['pengguna' => 'user'])
+        ->middleware('can:admin');
 
     Route::prefix('produksi/{sector}')
         ->whereIn('sector', array_column(SectorType::cases(), 'value'))

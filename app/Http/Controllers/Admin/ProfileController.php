@@ -37,7 +37,7 @@ class ProfileController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ], [], ['current_password' => 'kata sandi saat ini', 'password' => 'kata sandi baru']);
 
-        $request->user()->update(['password' => $data['password']]);
+        $request->user()->update(['password' => $data['password'], 'must_change_password' => false]);
 
         return back()->with('success', 'Kata sandi berhasil diganti.');
     }

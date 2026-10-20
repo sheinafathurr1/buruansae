@@ -15,7 +15,7 @@ class HarvestRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('update', $this->production());
     }
 
     public function sectorType(): SectorType

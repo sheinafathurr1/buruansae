@@ -31,7 +31,7 @@ class ProductionTest extends TestCase
         parent::setUp();
         Carbon::setTestNow('2026-06-15 09:00:00');
         Storage::fake('public');
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
         $this->group = FarmerGroup::factory()->create(['name' => 'Buruan SAE Sauyunan']);
         $this->kangkung = Commodity::factory()->inSector('SAYUR')->create(['name' => 'KANGKUNG', 'growing_days' => 25]);

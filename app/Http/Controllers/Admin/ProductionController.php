@@ -10,14 +10,19 @@ use App\Models\District;
 use App\Models\FarmerGroup;
 use App\Models\Production;
 use App\Models\Sector;
+use App\Models\User;
 use App\Services\ProductionRecorder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-/** Data produksi per sektor (pengganti DataSayur, DataIkan, ... di aplikasi lama). */
+/**
+ * Data produksi per sektor (pengganti DataSayur, DataIkan, ... di aplikasi lama).
+ * Staf hanya melihat & mengisi data kelompok binaannya (app/Policies/ProductionPolicy).
+ */
 class ProductionController extends Controller
 {
     public const STATUSES = ['all', 'pending', 'late', 'harvested'];
@@ -26,6 +31,7 @@ class ProductionController extends Controller
 
     public function index(Request $request, SectorType $sector): View
     {
+        $user = $request->user();
         $sectorModel = $this->sectorModel($sector);
         $today = Carbon::today()->toDateString();
         $status = in_array($request->query('status'), self::STATUSES, true) ? $request->query('status') : 'all';
@@ -34,6 +40,7 @@ class ProductionController extends Controller
         $districtId = $request->integer('district') ?: null;
 
         $base = fn () => Production::query()
+            ->managedBy($user)
             ->whereHas('commodity', fn (Builder $q) => $q->where('sector_id', $sectorModel->id))
             ->whereHas('farmerGroup', fn (Builder $q) => $q
                 ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
@@ -57,6 +64,7 @@ class ProductionController extends Controller
                 'farmerGroup:id,name,rw,village_id,extension_officer,facilitator',
                 'farmerGroup.village:id,name,district_id',
                 'farmerGroup.village.district:id,name',
+                'creator:id,name',
             ])
             ->latest('id')
             ->paginate(15)
@@ -77,13 +85,15 @@ class ProductionController extends Controller
             'commodityId' => $commodityId,
             'districtId' => $districtId,
             'commodities' => Commodity::query()->where('sector_id', $sectorModel->id)->orderBy('name')->get(['id', 'name']),
-            'districts' => District::query()->orderBy('name')->get(['id', 'name']),
+            'districts' => District::query()->withGroupsManagedBy($user)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function create(SectorType $sector): View
+    public function create(Request $request, SectorType $sector): View
     {
-        return $this->form($sector, new Production);
+        Gate::authorize('create', Production::class);
+
+        return $this->form($request->user(), $sector, new Production);
     }
 
     public function store(ProductionRequest $request, SectorType $sector): RedirectResponse
@@ -96,11 +106,12 @@ class ProductionController extends Controller
             ->with('highlight', $production->id);
     }
 
-    public function edit(SectorType $sector, Production $production): View
+    public function edit(Request $request, SectorType $sector, Production $production): View
     {
         $this->ensureBelongsToSector($sector, $production);
+        Gate::authorize('update', $production);
 
-        return $this->form($sector, $production->load(['processedProductDetail', 'seedlingDetail', 'inputs']));
+        return $this->form($request->user(), $sector, $production->load(['processedProductDetail', 'seedlingDetail', 'inputs', 'creator:id,name', 'editor:id,name']));
     }
 
     public function update(ProductionRequest $request, SectorType $sector, Production $production): RedirectResponse
@@ -116,12 +127,13 @@ class ProductionController extends Controller
     public function destroy(SectorType $sector, Production $production): RedirectResponse
     {
         $this->ensureBelongsToSector($sector, $production);
+        Gate::authorize('delete', $production);
         $this->recorder->delete($production);
 
         return back()->with('success', 'Data '.strtolower($sector->label()).' berhasil dihapus.');
     }
 
-    private function form(SectorType $sector, Production $production): View
+    private function form(User $user, SectorType $sector, Production $production): View
     {
         $sectorModel = $this->sectorModel($sector);
 
@@ -131,6 +143,7 @@ class ProductionController extends Controller
             'production' => $production,
             'commodities' => Commodity::query()->where('sector_id', $sectorModel->id)->orderBy('name')->get(['id', 'name', 'growing_days']),
             'groups' => FarmerGroup::query()
+                ->managedBy($user)
                 ->with(['village:id,name,district_id', 'village.district:id,name'])
                 ->orderBy('name')
                 ->get(['id', 'name', 'rw', 'village_id', 'extension_officer', 'facilitator']),

@@ -38,14 +38,36 @@ Fitur sama dengan aplikasi CodeIgniter `buruansae-dashboard`, disesuaikan dengan
 | Data produksi | `/admin/produksi/{sektor}` | Per sektor (8 sektor, termasuk Pembibitan): daftar dengan tab Semua / Belum panen / Terlambat / Sudah panen, pencarian kelompok, filter komoditas & kecamatan |
 | Tambah / ubah data tanam | `…/tambah`, `…/{id}/ubah` | Kelompok (dengan info penyuluh, pendamping, kelurahan), komoditas, kategori tanam, jumlah, perkiraan panen. **Perkiraan tanggal panen dihitung otomatis** dari tanggal tanam + durasi tanam komoditas. Ikan/ternak: pakan. Olahan hasil: bahan dasar, merek, resep, PIRT, halal, uji lab. Pembibitan: asal bibit |
 | Data panen / produksi | `…/{id}/panen` | Tanggal panen, foto hasil, penyaluran per kategori (jumlah, KK, orang), harga jual. **Jumlah panen = total konsumsi pribadi + dibagikan + dijual** (sama dengan perubahan terakhir di aplikasi lama). Ikan/ternak: jumlah ekor. Buah: pemupukan |
-| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, ketua, kontak, penyuluh, pendamping, lahan, status keaktifan, foto lahan & ketua |
+| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, ketua, kontak, penyuluh, pendamping, lahan, status keaktifan, foto lahan & ketua, petugas (staf) yang mengurusnya |
 | Komoditas | `/admin/komoditas` | Tambah/ubah/hapus komoditas per sektor dengan durasi tanam dan gambar (gambar tampil di portal publik) |
+| Pengguna & petugas | `/admin/pengguna` | Akun admin & staf: peran, status aktif, kata sandi sementara, kelompok binaan staf (cari, pilih per kecamatan) |
 | Profil | `/admin/profil` | Ubah nama, email, dan kata sandi sendiri |
+
+### Peran: admin dan staf
+
+| | Admin | Staf (pegawai DKPP / penyuluh) |
+|---|---|---|
+| Ringkasan | Seluruh kota, ditambah pemantauan petugas: kelompok tanpa petugas, data yang diisi tiap staf bulan ini, panen terlambat per staf | Hanya kelompok binaannya: daftar kelompok dengan status, siklus yang perlu dicatat panennya |
+| Data tanam, panen, penyaluran | Semua kelompok | Hanya kelompok binaan; kelompok lain tidak terlihat |
+| Hapus data produksi | Semua | Hanya data yang ia catat sendiri |
+| Profil kelompok | Tambah, ubah, hapus | Ubah kelompok binaan, kecuali nama & wilayah (kelurahan, RW) |
+| Komoditas, Pengguna | Ya | Tidak ada akses |
+
+- Satu kelompok boleh dipegang beberapa staf. Hak akses mengikuti **penugasan saat ini**, bukan siapa yang dulu
+  mencatat: petugas pengganti bisa melanjutkan dan memperbaiki data lama kelompok itu.
+- Pembatasan dicek di server (`app/Policies`, query yang dibatasi per peran, dan validasi pilihan kelompok), jadi
+  mengganti ID di alamat URL atau mengirim form untuk kelompok lain ditolak (403).
+- Setiap data produksi mencatat **siapa yang mengisi dan terakhir mengubah** (`created_by`, `updated_by`).
+- Akun baru dan kata sandi yang disetel ulang admin bersifat **sementara**: pengguna wajib menggantinya sebelum
+  bisa membuka halaman lain.
+- Akun yang sudah pernah mencatat data tidak bisa dihapus (agar riwayatnya jelas); nonaktifkan saja. Admin tidak bisa
+  menurunkan peran, menonaktifkan, atau menghapus akunnya sendiri.
 
 Perbedaan dari aplikasi CodeIgniter:
 
 - **Keamanan login**: dibatasi 5 percobaan per menit per akun (+20 per menit per IP), akun bisa dinonaktifkan, tidak ada
-  pendaftaran akun publik. Akun dibuat lewat perintah `buruansae:user` (lihat bawah).
+  pendaftaran akun publik. Akun dibuat admin dari menu Pengguna (akun admin pertama lewat perintah `buruansae:user`).
+- **Peran admin & staf** dengan kelompok binaan (aplikasi lama: semua akun punya akses yang sama).
 - **Hapus kelompok** kini *soft delete*: data produksinya tetap tersimpan tetapi tidak lagi dihitung di portal
   (dulu seluruh data produksi kelompok ikut terhapus permanen).
 - **Komoditas yang sudah dipakai** tidak bisa dihapus atau dipindah sektor.
@@ -56,9 +78,13 @@ Perbedaan dari aplikasi CodeIgniter:
 
 ### Membuat akun pengelola
 
+Akun staf dan admin lain dibuat dari menu **Pengguna & petugas**. Perintah server dipakai untuk akun admin pertama
+atau bila tidak ada admin yang bisa masuk:
+
 ```bash
-php artisan buruansae:user admin --email=admin@bandung.go.id --name="Admin DKPP"   # akun baru (kata sandi ditanyakan)
+php artisan buruansae:user admin --email=admin@bandung.go.id --name="Admin DKPP"   # akun baru = admin (kata sandi ditanyakan)
 php artisan buruansae:user admin                                                   # setel ulang kata sandi
+php artisan buruansae:user budi --role=staff                                       # ubah peran (admin | staff)
 php artisan buruansae:user penyuluh1 --deactivate                                  # nonaktifkan (--activate untuk mengaktifkan)
 ```
 
@@ -107,13 +133,16 @@ jalankan `npm install` lalu `npm run dev` (selama mengembangkan) atau `npm run b
 php artisan test
 ```
 
-63 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
+89 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
 
 - **Portal**: perhitungan dashboard terhadap data yang totalnya dihitung manual (termasuk kelompok yang sudah dihapus
   & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman, API peta, header keamanan.
 - **Dashboard**: login (username/email, akun nonaktif, pembatasan percobaan), CRUD kelompok & komoditas (termasuk foto),
   input tanam per sektor, input panen (total = jumlah penyaluran, validasi tanggal/foto/harga), hapus data, dan
   pengosongan cache portal setelah data berubah.
+- **Peran**: staf tidak bisa melihat, mengisi, mengubah, atau menghapus data kelompok lain (termasuk lewat URL/form
+  yang diubah), hanya menghapus data yang ia catat, tidak bisa mengubah nama/wilayah kelompok atau membuka menu admin;
+  akses mengikuti penugasan terbaru; menu Pengguna (kata sandi sementara, penugasan, admin tidak bisa mengunci diri).
 
 Pengujian yang sama juga lolos di MariaDB 10.11.
 
@@ -170,6 +199,8 @@ php artisan up
 ```
 
 - Tidak perlu `npm`: hasil build tampilan (`public/build`) ikut di-commit.
+- Saat pertama memperbarui ke versi dengan peran admin/staf, `migrate` menjadikan **semua akun yang sudah ada admin**
+  (sama seperti hak akses sebelumnya). Setelah itu buat akun staf dan kelompok binaannya dari menu Pengguna & petugas.
 - `git reset --hard` membuang perubahan file yang tidak di-commit di server. Isi `.env`, `storage/` (unggahan), dan
   `vendor/` tidak ikut git, jadi aman.
 - Jika memakai fitur Git di hPanel Hostinger (deploy otomatis), jalankan tetap perintah `composer install` sampai
@@ -191,11 +222,13 @@ php artisan cache:clear
 
 ```
 app/Enums/SectorType.php            8 sektor: slug URL ↔ kode sektor di DB, label, satuan, isian form per sektor
+app/Enums/UserRole.php              peran akun: admin, staff
 app/Services/SectorDashboard.php    angka dashboard sektor publik (query agregat)
 app/Services/HomeStatistics.php     angka ringkas beranda (di-cache, dikosongkan otomatis saat data berubah)
 app/Services/ProductionRecorder.php simpan data tanam, panen & penyaluran, hapus (dashboard pengelola)
 app/Http/Controllers/…              portal publik (Home, Sector, SectorVillage, News, Map, Api/Location)
-app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, Profile)
+app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, User, Profile)
+app/Policies/…                      hak akses per kelompok (staf hanya kelompok binaan); gate "admin" di AppServiceProvider
 app/Http/Requests/…                 validasi form (filter publik, login, form dashboard)
 app/Console/Commands/ManageUser.php perintah buruansae:user
 app/Support/…                       format angka/tanggal, penyimpanan foto, cache portal

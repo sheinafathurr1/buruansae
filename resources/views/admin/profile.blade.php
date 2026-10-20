@@ -1,6 +1,13 @@
 <x-layouts.admin title="Profil">
     <x-admin.page-header title="Profil & kata sandi" description="Perbarui nama, email, dan kata sandi akun Anda." />
 
+    @if ($user->must_change_password && ! session('warning'))
+        <div class="mb-6 flex max-w-5xl items-start gap-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200" role="alert">
+            <x-heroicon-o-key class="size-5 shrink-0" aria-hidden="true" />
+            <p>Anda masih memakai kata sandi sementara dari admin. Ganti kata sandi di bawah sebelum membuka halaman lain.</p>
+        </div>
+    @endif
+
     <div class="grid max-w-5xl gap-6 lg:grid-cols-2">
         <form method="POST" action="{{ route('admin.profile.update') }}" class="card space-y-5 p-5 sm:p-6" novalidate aria-labelledby="profil-title">
             @csrf
@@ -9,7 +16,7 @@
             <div>
                 <p class="form-label">Username</p>
                 <p class="rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-700">{{ $user->username ?? '–' }}</p>
-                <p class="mt-1.5 text-xs text-slate-500">Username hanya bisa diubah oleh admin server.</p>
+                <p class="mt-1.5 text-xs text-slate-500">Username hanya bisa diubah oleh admin. Peran: {{ $user->role->label() }}.</p>
             </div>
             <x-form.input name="name" label="Nama" :value="old('name', $user->name)" required maxlength="255" autocomplete="name" />
             <x-form.input name="email" label="Email" type="email" :value="old('email', $user->email)" required maxlength="255" autocomplete="email" />

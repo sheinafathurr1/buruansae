@@ -4,8 +4,9 @@ Struktur hasil redesign (fase 2) yang dulu dikirim di folder `newdb/`, kini suda
 
 ```
 app/Enums/PlantingCategory.php, InputType.php   PHP enum + label Indonesia
-app/Models/                                     12 model + User (username, is_active)
+app/Models/                                     12 model + User (username, role, is_active)
 database/migrations/2026_09_26_*                13 migration struktur baru
+database/migrations/2026_10_20_*                peran akun, kelompok binaan staf, pencatat data produksi
 database/seeders/SectorSeeder.php               8 sektor (data acuan)
 database/seeders/RecipientCategorySeeder.php    10 kategori penerima (data acuan)
 database/seeders/DemoSeeder.php                 data contoh untuk lokal/staging
@@ -51,6 +52,12 @@ Perbedaan dari paket `newdb/` asli:
 | `processed_product_details` | Detail produk olahan: bahan dasar, merek, resep, uji lab, halal, PIRT |
 | `seedling_details` | Detail bibit: asal bibit |
 | `monthly_distribution_recaps` | Rekap distribusi bulanan per kelurahan |
+| `users` | Akun dashboard: `role` (`admin` / `staff`), `is_active`, `must_change_password` (kata sandi sementara dari admin), `last_login_at` |
+| `farmer_group_user` | Kelompok binaan staf (banyak ke banyak: satu kelompok boleh dipegang beberapa staf) |
+
+`productions.created_by` / `updated_by` (→ `users`, kosong untuk data impor) mencatat siapa yang mengisi dan terakhir
+mengubah data. Bila akun dihapus nilainya menjadi NULL, tetapi dashboard hanya mengizinkan hapus akun yang belum pernah
+mencatat data.
 
 Relasi utama: `districts` → `villages` → `farmer_groups` → `productions` ← `commodities` ← `sectors`;
 `productions` → `distributions` ← `recipient_categories`.
@@ -196,14 +203,17 @@ disalin, tetapi login ke dashboard dengan password lama akan gagal. Setel ulang 
 php artisan buruansae:user namauser        # kata sandi baru ditanyakan
 ```
 
+Aplikasi lama tidak membedakan hak akses, jadi semua akun hasil impor menjadi **admin**.
+
 ## Hal yang masih perlu diputuskan
 
 - **Aturan tanggal.** CHECK `harvest_date >= start_date` di migration `productions` masih dikomentari karena data lama
   punya ±114 baris panen sebelum tanam. Aktifkan setelah data itu dibetulkan.
 - **Data uji** di database lama (mis. `data_sampah` id 1 yang semua nilainya 1) sebaiknya dihapus sebelum impor.
-- **Hak akses.** Semua akun aktif di dashboard `/admin` punya akses yang sama (seperti aplikasi CodeIgniter lama).
-  Bila perlu membedakan admin dan penyuluh, pasang `spatie/laravel-permission`.
 - **Masa transisi.** Selama aplikasi CodeIgniter lama masih dipakai, data yang diinput di sana masuk ke tabel lama.
   Hentikan input di aplikasi lama sebelum impor terakhir, lalu gunakan dashboard `/admin` ini.
 - **Wilayah.** Kecamatan & kelurahan (termasuk koordinat peta) berasal dari impor data lama; dashboard belum punya
   menu untuk mengubahnya.
+- **Isian "0" di data kelompok.** 41 kelompok lama berisi `0` sebagai pengganti "kosong" di nama ketua, kontak, luas
+  & status lahan, dan tautan. Impor menyalinnya apa adanya. Tautan `0` ditolak validasi saat profil kelompok itu
+  disimpan, jadi kolomnya perlu dikosongkan (atau seluruh isian `0` dibersihkan sekaligus).

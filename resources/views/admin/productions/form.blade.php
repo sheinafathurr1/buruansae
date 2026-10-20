@@ -25,6 +25,12 @@
     <x-admin.page-header :title="$title" :image="$sector->image()"
                          :breadcrumbs="[['Data '.$sector->label(), route('admin.productions.index', $sector)], [$editing ? 'Ubah' : 'Tambah', null]]" />
 
+    @if ($editing && $production->creator)
+        <p class="mb-4 max-w-4xl text-sm text-slate-600">
+            Dicatat oleh <span class="font-semibold text-slate-800">{{ $production->creator->name }}</span>@if ($production->editor && $production->editor->isNot($production->creator)), terakhir diubah oleh <span class="font-semibold text-slate-800">{{ $production->editor->name }}</span>@endif.
+        </p>
+    @endif
+
     <form method="POST" novalidate class="max-w-4xl space-y-6"
           action="{{ $editing ? route('admin.productions.update', [$sector, $production]) : route('admin.productions.store', $sector) }}"
           x-data="productionForm(@js($state), @js($groupInfo), @js($growingDays))">

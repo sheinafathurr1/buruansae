@@ -1,10 +1,12 @@
 @php
+    $isAdmin = auth()->user()->isAdmin();
     $editing = $group->exists;
+    $selectedStaff = array_map('intval', old('staff_ids', $editing ? $group->staff->pluck('id')->all() : []));
     $title = $editing ? 'Ubah kelompok' : 'Tambah kelompok';
     $activeValue = old('is_active', $group->is_active === null ? '' : ($group->is_active ? '1' : '0'));
 @endphp
 <x-layouts.admin :title="$title">
-    <x-admin.page-header :title="$title" :breadcrumbs="[['Kelompok', route('admin.kelompok.index')], [$editing ? $group->name : 'Tambah', null]]" />
+    <x-admin.page-header :title="$title" :breadcrumbs="[[$isAdmin ? 'Kelompok' : 'Kelompok binaan', route('admin.kelompok.index')], [$editing ? $group->name : 'Tambah', null]]" />
 
     <form method="POST" enctype="multipart/form-data" novalidate
           action="{{ $editing ? route('admin.kelompok.update', $group) : route('admin.kelompok.store') }}" class="space-y-6">
@@ -20,20 +22,33 @@
         <section class="card p-5 sm:p-6" aria-labelledby="identitas-title">
             <h2 id="identitas-title" class="text-base font-bold text-slate-900">Identitas kelompok</h2>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <x-form.input name="name" label="Nama kelompok" :value="old('name', $group->name)" required maxlength="150" class="sm:col-span-2" />
+                @if ($isAdmin)
+                    <x-form.input name="name" label="Nama kelompok" :value="old('name', $group->name)" required maxlength="150" class="sm:col-span-2" />
 
-                <x-form.select name="village_id" label="Kelurahan" required data-searchable hint="Ketik nama kelurahan atau kecamatan untuk mencari.">
-                    <option value="">Pilih kelurahan</option>
-                    @foreach ($districts as $district)
-                        <optgroup label="Kec. {{ display_name($district->name) }}">
-                            @foreach ($district->villages as $village)
-                                <option value="{{ $village->id }}" data-data="{{ json_encode(['search' => $district->name]) }}"
-                                        @selected((int) old('village_id', $group->village_id) === $village->id)>{{ display_name($village->name) }}</option>
-                            @endforeach
-                        </optgroup>
-                    @endforeach
-                </x-form.select>
-                <x-form.input name="rw" label="RW" type="number" min="1" max="255" inputmode="numeric" :value="old('rw', $group->rw)" />
+                    <x-form.select name="village_id" label="Kelurahan" required data-searchable hint="Ketik nama kelurahan atau kecamatan untuk mencari.">
+                        <option value="">Pilih kelurahan</option>
+                        @foreach ($districts as $district)
+                            <optgroup label="Kec. {{ display_name($district->name) }}">
+                                @foreach ($district->villages as $village)
+                                    <option value="{{ $village->id }}" data-data="{{ json_encode(['search' => $district->name]) }}"
+                                            @selected((int) old('village_id', $group->village_id) === $village->id)>{{ display_name($village->name) }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                    </x-form.select>
+                    <x-form.input name="rw" label="RW" type="number" min="1" max="255" inputmode="numeric" :value="old('rw', $group->rw)" />
+                @else
+                    {{-- Staf tidak mengubah nama & wilayah: keduanya menentukan kelompok mana ini. --}}
+                    <div class="rounded-2xl bg-slate-50 p-4 text-sm sm:col-span-2">
+                        <dl class="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto]">
+                            <div><dt class="text-xs text-slate-500">Nama kelompok</dt><dd class="font-semibold text-slate-800">{{ $group->name }}</dd></div>
+                            <div><dt class="text-xs text-slate-500">Kelurahan</dt><dd class="font-semibold text-slate-800">{{ display_name($group->village?->name) }}</dd></div>
+                            <div><dt class="text-xs text-slate-500">Kecamatan</dt><dd class="font-semibold text-slate-800">{{ display_name($group->village?->district?->name) }}</dd></div>
+                            <div><dt class="text-xs text-slate-500">RW</dt><dd class="font-semibold text-slate-800">{{ $group->rw ? str_pad((string) $group->rw, 2, '0', STR_PAD_LEFT) : '–' }}</dd></div>
+                        </dl>
+                        <p class="mt-3 text-xs text-slate-500">Nama dan wilayah kelompok hanya bisa diubah oleh admin.</p>
+                    </div>
+                @endif
 
                 <fieldset class="sm:col-span-2">
                     <legend class="form-label">Status keaktifan</legend>
@@ -73,6 +88,35 @@
                 <x-form.photo name="leader_photo" label="Foto ketua" :current="$group->leader_photo_url" removable hint="JPG/PNG/WebP, maks. 8 MB." />
             </div>
         </section>
+
+        @if ($isAdmin)
+            <section class="card p-5 sm:p-6" aria-labelledby="petugas-title">
+                <h2 id="petugas-title" class="text-base font-bold text-slate-900">Petugas</h2>
+                <p class="mt-1 text-sm text-slate-600">Staf yang boleh mengisi dan mengubah data kelompok ini. Admin selalu bisa mengelola semua kelompok.</p>
+                @if ($staffUsers->isEmpty())
+                    <p class="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                        Belum ada akun staf. <a href="{{ route('admin.pengguna.create') }}" class="font-semibold text-brand-700 underline">Buat akun staf</a> lebih dulu.
+                    </p>
+                @else
+                    <fieldset class="mt-4">
+                        <legend class="sr-only">Pilih petugas kelompok ini</legend>
+                        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            @foreach ($staffUsers as $staff)
+                                <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                                    <input type="checkbox" name="staff_ids[]" value="{{ $staff->id }}" @checked(in_array($staff->id, $selectedStaff, true))
+                                           class="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                                    <span class="min-w-0">
+                                        <span class="block truncate font-semibold text-slate-800">{{ $staff->name }}</span>
+                                        <span class="block truncate text-xs text-slate-500">{{ $staff->username }}{{ $staff->is_active ? '' : ' · nonaktif' }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                    @error('staff_ids.*')<p class="mt-2 text-sm text-red-700">{{ $message }}</p>@enderror
+                @endif
+            </section>
+        @endif
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <a href="{{ route('admin.kelompok.index') }}" class="btn btn-secondary">Batal</a>
