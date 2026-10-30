@@ -5,8 +5,7 @@
     $feed = $editing ? $production->inputs->first(fn ($i) => $i->type === \App\Enums\InputType::Feed) : null;
 
     $groupInfo = $groups->mapWithKeys(fn ($g) => [$g->id => [
-        'officer' => $g->extension_officer,
-        'facilitator' => $g->facilitator,
+        'staff' => $g->staff->pluck('name')->implode(', '),
         'village' => display_name($g->village?->name),
         'district' => display_name($g->village?->district?->name),
         'rw' => $g->rw,
@@ -55,8 +54,7 @@
                     @endforeach
                 </x-form.select>
                 <dl class="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:col-span-2 sm:grid-cols-4" x-show="group" x-cloak aria-live="polite">
-                    <div><dt class="text-xs text-slate-500">Penyuluh</dt><dd class="font-semibold text-slate-800" x-text="group?.officer || '–'"></dd></div>
-                    <div><dt class="text-xs text-slate-500">Pendamping</dt><dd class="font-semibold text-slate-800" x-text="group?.facilitator || '–'"></dd></div>
+                    <div class="sm:col-span-2"><dt class="text-xs text-slate-500">Petugas</dt><dd class="font-semibold text-slate-800" x-text="group?.staff || 'Belum ada petugas'"></dd></div>
                     <div><dt class="text-xs text-slate-500">Kelurahan</dt><dd class="font-semibold text-slate-800" x-text="group ? group.village + (group.rw ? ' · RW ' + group.rw : '') : '–'"></dd></div>
                     <div><dt class="text-xs text-slate-500">Kecamatan</dt><dd class="font-semibold text-slate-800" x-text="group?.district || '–'"></dd></div>
                 </dl>

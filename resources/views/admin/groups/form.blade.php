@@ -65,34 +65,10 @@
             </div>
         </section>
 
-        <section class="card p-5 sm:p-6" aria-labelledby="pengurus-title">
-            <h2 id="pengurus-title" class="text-base font-bold text-slate-900">Pengurus &amp; pendamping</h2>
-            <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <x-form.input name="leader_name" label="Nama ketua" :value="old('leader_name', $group->leader_name)" maxlength="150" />
-                <x-form.input name="phone" label="Nomor kontak" type="tel" inputmode="tel" :value="old('phone', $group->phone)" maxlength="20" placeholder="08xxxxxxxxxx" />
-                <x-form.input name="extension_officer" label="Penyuluh" :value="old('extension_officer', $group->extension_officer)" required maxlength="150" />
-                <x-form.input name="facilitator" label="Pendamping" :value="old('facilitator', $group->facilitator)" required maxlength="150" />
-            </div>
-        </section>
-
-        <section class="card p-5 sm:p-6" aria-labelledby="lahan-title">
-            <h2 id="lahan-title" class="text-base font-bold text-slate-900">Lahan &amp; dokumentasi</h2>
-            <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <x-form.input name="land_area_m2" label="Luas lahan" type="number" min="0" step="any" inputmode="decimal" suffix="m²" :value="old('land_area_m2', $group->land_area_m2 !== null ? (float) $group->land_area_m2 : null)" />
-                <x-form.input name="land_status" label="Status lahan" :value="old('land_status', $group->land_status)" maxlength="50" list="land-status-options" hint="Mis. Milik Pribadi, Fasos/Fasum, Pinjam Pakai." />
-                <datalist id="land-status-options">
-                    <option value="Milik Pribadi"><option value="Fasos/Fasum"><option value="Pinjam Pakai"><option value="Sewa">
-                </datalist>
-                <x-form.input name="description_url" label="Tautan lokasi / deskripsi" type="url" :value="old('description_url', $group->description_url)" maxlength="500" class="sm:col-span-2" placeholder="https://maps.google.com/…" hint="Opsional: tautan Google Maps atau halaman profil kelompok." />
-                <x-form.photo name="land_photo" label="Foto lahan" :current="$group->land_photo_url" removable hint="JPG/PNG/WebP, maks. 8 MB. Foto besar otomatis diperkecil." />
-                <x-form.photo name="leader_photo" label="Foto ketua" :current="$group->leader_photo_url" removable hint="JPG/PNG/WebP, maks. 8 MB." />
-            </div>
-        </section>
-
         @if ($isAdmin)
             <section class="card p-5 sm:p-6" aria-labelledby="petugas-title">
                 <h2 id="petugas-title" class="text-base font-bold text-slate-900">Petugas</h2>
-                <p class="mt-1 text-sm text-slate-600">Staf yang boleh mengisi dan mengubah data kelompok ini. Admin selalu bisa mengelola semua kelompok.</p>
+                <p class="mt-1 text-sm text-slate-600">Staf yang bertanggung jawab atas kelompok ini: hanya mereka (dan admin) yang bisa mengisi dan mengubah datanya. Satu kelompok boleh dipegang beberapa staf.</p>
                 @if ($staffUsers->isEmpty())
                     <p class="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                         Belum ada akun staf. <a href="{{ route('admin.pengguna.create') }}" class="font-semibold text-brand-700 underline">Buat akun staf</a> lebih dulu.
@@ -116,7 +92,41 @@
                     @error('staff_ids.*')<p class="mt-2 text-sm text-red-700">{{ $message }}</p>@enderror
                 @endif
             </section>
+        @else
+            <section class="card p-5 sm:p-6" aria-labelledby="petugas-title">
+                <h2 id="petugas-title" class="text-base font-bold text-slate-900">Petugas</h2>
+                <p class="mt-1 text-sm text-slate-600">Yang bertanggung jawab atas kelompok ini. Penugasan diatur oleh admin.</p>
+                <ul class="mt-4 flex flex-wrap gap-2">
+                    @foreach ($group->staff as $staff)
+                        <li class="rounded-xl bg-slate-50 px-3.5 py-2 text-sm font-semibold text-slate-800">
+                            {{ $staff->name }}@if ($staff->is(auth()->user())) <span class="font-normal text-slate-600">(Anda)</span>@endif
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
         @endif
+
+        <section class="card p-5 sm:p-6" aria-labelledby="pengurus-title">
+            <h2 id="pengurus-title" class="text-base font-bold text-slate-900">Pengurus kelompok</h2>
+            <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <x-form.input name="leader_name" label="Nama ketua" :value="old('leader_name', $group->leader_name)" maxlength="150" />
+                <x-form.input name="phone" label="Nomor kontak" type="tel" inputmode="tel" :value="old('phone', $group->phone)" maxlength="20" placeholder="08xxxxxxxxxx" />
+            </div>
+        </section>
+
+        <section class="card p-5 sm:p-6" aria-labelledby="lahan-title">
+            <h2 id="lahan-title" class="text-base font-bold text-slate-900">Lahan &amp; dokumentasi</h2>
+            <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <x-form.input name="land_area_m2" label="Luas lahan" type="number" min="0" step="any" inputmode="decimal" suffix="m²" :value="old('land_area_m2', $group->land_area_m2 !== null ? (float) $group->land_area_m2 : null)" />
+                <x-form.input name="land_status" label="Status lahan" :value="old('land_status', $group->land_status)" maxlength="50" list="land-status-options" hint="Mis. Milik Pribadi, Fasos/Fasum, Pinjam Pakai." />
+                <datalist id="land-status-options">
+                    <option value="Milik Pribadi"><option value="Fasos/Fasum"><option value="Pinjam Pakai"><option value="Sewa">
+                </datalist>
+                <x-form.input name="description_url" label="Tautan lokasi / deskripsi" type="url" :value="old('description_url', $group->description_url)" maxlength="500" class="sm:col-span-2" placeholder="https://maps.google.com/…" hint="Opsional: tautan Google Maps atau halaman profil kelompok." />
+                <x-form.photo name="land_photo" label="Foto lahan" :current="$group->land_photo_url" removable hint="JPG/PNG/WebP, maks. 8 MB. Foto besar otomatis diperkecil." />
+                <x-form.photo name="leader_photo" label="Foto ketua" :current="$group->leader_photo_url" removable hint="JPG/PNG/WebP, maks. 8 MB." />
+            </div>
+        </section>
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <a href="{{ route('admin.kelompok.index') }}" class="btn btn-secondary">Batal</a>

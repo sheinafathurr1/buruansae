@@ -127,9 +127,8 @@ class UserController extends Controller
             ->orderBy('villages.name')
             ->orderBy('farmer_groups.name')
             ->get([
-                'farmer_groups.id', 'farmer_groups.name', 'farmer_groups.rw', 'farmer_groups.extension_officer',
-                'farmer_groups.facilitator', 'villages.name as village_name', 'districts.id as district_id',
-                'districts.name as district_name',
+                'farmer_groups.id', 'farmer_groups.name', 'farmer_groups.rw', 'villages.name as village_name',
+                'districts.id as district_id', 'districts.name as district_name',
             ]);
 
         return view('admin.users.form', [

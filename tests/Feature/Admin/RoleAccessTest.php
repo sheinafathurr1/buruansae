@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -35,7 +36,7 @@ class RoleAccessTest extends TestCase
 
         $this->admin = User::factory()->admin()->create(['name' => 'Admin DKPP']);
         $this->staff = User::factory()->create(['name' => 'Staf Sukajadi']);
-        $this->ownGroup = FarmerGroup::factory()->create(['name' => 'Buruan SAE Binaan', 'facilitator' => 'Bu Neneng']);
+        $this->ownGroup = FarmerGroup::factory()->create(['name' => 'Buruan SAE Binaan']);
         $this->otherGroup = FarmerGroup::factory()->create(['name' => 'Buruan SAE Tetangga']);
         $this->kangkung = Commodity::factory()->inSector('SAYUR')->create(['name' => 'KANGKUNG', 'growing_days' => 25]);
 
@@ -182,8 +183,6 @@ class RoleAccessTest extends TestCase
             'name' => 'Nama Diganti',
             'village_id' => $this->otherGroup->village_id,
             'phone' => '0812 3456',
-            'extension_officer' => 'Pak Ujang',
-            'facilitator' => 'Bu Neneng',
             'is_active' => '1',
             'staff_ids' => [$this->staff->id],
         ])->assertRedirect('/admin/kelompok')->assertSessionHasNoErrors();
@@ -197,6 +196,28 @@ class RoleAccessTest extends TestCase
         $this->post('/admin/kelompok', ['name' => 'Baru'])->assertForbidden();
         $this->delete("/admin/kelompok/{$this->ownGroup->id}")->assertForbidden();
         $this->assertNotSoftDeleted($this->ownGroup);
+    }
+
+    public function test_assigned_staff_replace_the_old_officer_columns(): void
+    {
+        $this->assertFalse(Schema::hasColumn('farmer_groups', 'extension_officer'));
+        $this->assertFalse(Schema::hasColumn('farmer_groups', 'facilitator'));
+
+        $colleague = User::factory()->create(['name' => 'Budi Santoso']);
+        $colleague->farmerGroups()->attach($this->ownGroup);
+
+        $this->actingAs($this->staff);
+        $this->get('/admin/kelompok')->assertOk()
+            ->assertSee('Petugas')->assertSeeInOrder(['Buruan SAE Binaan', 'Budi Santoso'])->assertSee('(Anda)')
+            ->assertDontSee('Penyuluh')->assertDontSee('Pendamping');
+        $this->get("/admin/kelompok/{$this->ownGroup->id}/ubah")->assertOk()
+            ->assertSee('Penugasan diatur oleh admin.')->assertSee('Budi Santoso')
+            ->assertDontSee('name="extension_officer"', false);
+        // Info kelompok di form data tanam menampilkan petugasnya.
+        $this->get('/admin/produksi/vegetable/tambah')->assertOk()->assertSee('Budi Santoso');
+
+        $this->actingAs($this->admin);
+        $this->get('/admin/kelompok?q=Budi')->assertOk()->assertSee('Buruan SAE Binaan')->assertDontSee('Buruan SAE Tetangga');
     }
 
     public function test_admin_menus_are_closed_to_staff(): void
@@ -246,8 +267,6 @@ class RoleAccessTest extends TestCase
         $this->put("/admin/kelompok/{$this->otherGroup->id}", [
             'name' => $this->otherGroup->name,
             'village_id' => $this->otherGroup->village_id,
-            'extension_officer' => 'Pak Ujang',
-            'facilitator' => 'Bu Neneng',
             'staff_ids' => [$this->staff->id, $other->id],
         ])->assertSessionHasNoErrors();
 
@@ -257,8 +276,6 @@ class RoleAccessTest extends TestCase
         $this->put("/admin/kelompok/{$this->otherGroup->id}", [
             'name' => $this->otherGroup->name,
             'village_id' => $this->otherGroup->village_id,
-            'extension_officer' => 'Pak Ujang',
-            'facilitator' => 'Bu Neneng',
             'staff_ids' => [$this->admin->id],
         ])->assertSessionHasErrors('staff_ids.0');
     }

@@ -4,7 +4,7 @@
 @endphp
 <x-layouts.admin :title="$isAdmin ? 'Kelompok' : 'Kelompok binaan'">
     <x-admin.page-header :title="$isAdmin ? 'Kelompok' : 'Kelompok binaan'"
-                         :description="$isAdmin ? 'Data kelompok Buruan SAE beserta wilayah, penyuluh, pendamping, dan petugasnya.' : 'Kelompok yang ditugaskan kepada Anda. Hubungi admin untuk menambah atau memindahkan kelompok.'">
+                         :description="$isAdmin ? 'Data kelompok Buruan SAE beserta wilayah dan petugas yang bertanggung jawab.' : 'Kelompok yang ditugaskan kepada Anda. Hubungi admin untuk menambah atau memindahkan kelompok.'">
         @can('create', App\Models\FarmerGroup::class)
             <x-slot:actions>
                 <a href="{{ route('admin.kelompok.create') }}" class="btn btn-primary"><x-heroicon-m-plus class="size-4" aria-hidden="true" /> Tambah kelompok</a>
@@ -20,7 +20,7 @@
     ]) role="search" aria-label="Cari kelompok">
         <div>
             <label for="q" class="form-label">Cari</label>
-            <input type="search" id="q" name="q" value="{{ $search }}" class="form-control" placeholder="Nama kelompok, ketua, atau penyuluh">
+            <input type="search" id="q" name="q" value="{{ $search }}" class="form-control" placeholder="Nama kelompok, ketua, atau petugas">
         </div>
         <div>
             <label for="district" class="form-label">Kecamatan</label>
@@ -78,10 +78,7 @@
                         <tr>
                             <th scope="col">Kelompok</th>
                             <th scope="col">Wilayah</th>
-                            <th scope="col">Penyuluh / pendamping</th>
-                            @if ($isAdmin)
-                                <th scope="col">Petugas</th>
-                            @endif
+                            <th scope="col">Petugas</th>
                             <th scope="col">Status</th>
                             <th scope="col" class="text-right">Produksi</th>
                             <th scope="col"><span class="sr-only">Aksi</span></th>
@@ -102,19 +99,13 @@
                                         Kec. {{ display_name($group->village?->district?->name) }}@if ($group->rw) · RW {{ str_pad((string) $group->rw, 2, '0', STR_PAD_LEFT) }}@endif
                                     </span>
                                 </td>
-                                <td data-label="Penyuluh / pendamping">
-                                    {{ $group->extension_officer ?: '–' }}
-                                    <span class="block text-xs text-slate-500">{{ $group->facilitator ?: '–' }}</span>
+                                <td data-label="Petugas">
+                                    @forelse ($group->staff as $staff)
+                                        <span class="block">{{ $staff->name }}@if ($staff->is(auth()->user())) <span class="text-xs text-slate-600">(Anda)</span>@endif</span>
+                                    @empty
+                                        <span class="inline-block rounded-full whitespace-nowrap bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
+                                    @endforelse
                                 </td>
-                                @if ($isAdmin)
-                                    <td data-label="Petugas">
-                                        @forelse ($group->staff as $staff)
-                                            <span class="block">{{ $staff->name }}</span>
-                                        @empty
-                                            <span class="inline-block rounded-full whitespace-nowrap bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">Belum ada</span>
-                                        @endforelse
-                                    </td>
-                                @endif
                                 <td data-label="Status">
                                     @if ($group->is_active === true)
                                         <span class="inline-block rounded-full whitespace-nowrap bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200">Aktif</span>

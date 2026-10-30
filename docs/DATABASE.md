@@ -8,6 +8,7 @@ app/Models/                                     12 model + User (username, role,
 database/migrations/2026_09_26_*                13 migration struktur baru
 database/migrations/2026_10_20_*                peran akun, kelompok binaan staf, pencatat data produksi
 database/migrations/2026_10_21_*                riwayat aktivitas pencatatan (activity_logs)
+database/migrations/2026_10_30_*                hapus kolom penyuluh/pendamping (diganti petugas yang ditugaskan)
 database/seeders/SectorSeeder.php               8 sektor (data acuan)
 database/seeders/RecipientCategorySeeder.php    10 kategori penerima (data acuan)
 database/seeders/DemoSeeder.php                 data contoh untuk lokal/staging
@@ -43,7 +44,7 @@ Perbedaan dari paket `newdb/` asli:
 |---|---|
 | `districts` | Kecamatan |
 | `villages` | Kelurahan (+ `district_id`, `latitude`, `longitude`) |
-| `farmer_groups` | Kelompok Buruan SAE (RW, ketua, penyuluh, pendamping, luas & status lahan, `is_active`) |
+| `farmer_groups` | Kelompok Buruan SAE (RW, ketua, kontak, luas & status lahan, `is_active`). Penanggung jawabnya: petugas di `farmer_group_user` |
 | `sectors` | 8 sektor + `harvest_unit` (satuan hasil: `kg`, atau `pohon` untuk bibit) |
 | `commodities` | Komoditas per sektor (+ `growing_days`, `image`) |
 | `productions` | Satu siklus tanam → panen untuk **semua** sektor |
@@ -86,8 +87,7 @@ Relasi utama: `districts` → `villages` → `farmer_groups` → `productions` �
 | Kolom lama | Kolom baru |
 |---|---|
 | `nama_ketua` | `leader_name` |
-| `penyuluh` | `extension_officer` |
-| `pendamping` | `facilitator` |
+| `penyuluh`, `pendamping` | tidak dipindah: diganti petugas (akun staf) yang ditugaskan admin, tabel `farmer_group_user` |
 | `status_keaktifan` ('Aktif') | `is_active` (true / false / NULL = belum diketahui) |
 | `tanggal_tanam`, `tanggal_produksi`, `tanggal_masuk` | `start_date` |
 | `jumlah_tanam`, `jumlah_ikan`, `jumlah_ternak`, `jumlah_semai`, `jumlah_sampah` | `initial_quantity` |
@@ -221,7 +221,7 @@ php artisan buruansae:bersihkan-kelompok             # jalankan (minta konfirmas
 ```
 
 Yang dibersihkan hanya kolom opsional: nama ketua, nomor kontak, status lahan, tautan, dan luas lahan `0` m². Nama
-kelompok, penyuluh, pendamping, dan `updated_at` tidak diubah. Aman dijalankan berulang dan juga di database yang
+kelompok dan `updated_at` tidak diubah. Aman dijalankan berulang dan juga di database yang
 sudah berjalan di hosting.
 
 ### Password lama tidak bisa dipakai

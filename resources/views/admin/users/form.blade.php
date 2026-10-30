@@ -105,7 +105,7 @@
                     <div class="flex-1">
                         <label for="group-search" class="form-label">Cari kelompok</label>
                         <input type="search" id="group-search" class="form-control" x-model.debounce.150ms="query" autocomplete="off"
-                               placeholder="Nama kelompok, kelurahan, kecamatan, penyuluh, atau pendamping">
+                               placeholder="Nama kelompok, kelurahan, kecamatan, atau nama petugas lain">
                     </div>
                     <label class="flex items-center gap-2 text-sm text-slate-700 sm:pb-2.5">
                         <input type="checkbox" x-model="onlySelected" class="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
@@ -135,7 +135,7 @@
                             <ul class="pb-2">
                                 @foreach ($groups as $group)
                                     @php($others = $group->staff->reject(fn ($staff) => $staff->id === $user->id))
-                                    <li data-group data-search="{{ $search($group->name, $group->village_name, $group->district_name, $group->extension_officer, $group->facilitator, $others->pluck('name')->implode(' ')) }}">
+                                    <li data-group data-search="{{ $search($group->name, $group->village_name, $group->district_name, $others->pluck('name')->implode(' ')) }}">
                                         <label class="flex cursor-pointer items-start gap-3 rounded-xl px-3 py-2 hover:bg-slate-50 has-[:checked]:bg-brand-50">
                                             <input type="checkbox" name="group_ids[]" value="{{ $group->id }}" @checked(in_array($group->id, $selectedGroups, true))
                                                    @change="recount()" class="mt-0.5 size-4 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
@@ -143,8 +143,6 @@
                                                 <span class="font-semibold text-slate-800">{{ $group->name }}</span>
                                                 <span class="block text-xs text-slate-600">
                                                     Kel. {{ display_name($group->village_name) }}@if ($group->rw) · RW {{ str_pad((string) $group->rw, 2, '0', STR_PAD_LEFT) }}@endif
-                                                    @if ($group->extension_officer) · Penyuluh: {{ $group->extension_officer }}@endif
-                                                    @if ($group->facilitator) · Pendamping: {{ $group->facilitator }}@endif
                                                 </span>
                                                 @if ($others->isNotEmpty())
                                                     <span class="block text-xs text-amber-800">Juga dipegang: {{ $others->pluck('name')->implode(', ') }}</span>

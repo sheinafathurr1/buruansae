@@ -32,12 +32,14 @@ SELECT id, name FROM `buruansae_lama`.`data_kecamatan` ORDER BY id;
 INSERT INTO `villages` (id, district_id, name, latitude, longitude)
 SELECT id, id_kecamatan, name, latitude, longitude FROM `buruansae_lama`.`data_kelurahan` ORDER BY id;
 
+-- Kolom penyuluh & pendamping lama tidak dipindah: penanggung jawab kelompok kini
+-- petugas (akun staf) yang ditugaskan admin dari dashboard (tabel farmer_group_user).
 INSERT INTO `farmer_groups`
-  (id, village_id, rw, name, leader_name, phone, extension_officer, facilitator,
+  (id, village_id, rw, name, leader_name, phone,
    land_area_m2, land_status, is_active, status_note, land_photo, leader_photo,
    description_url, created_at, updated_at)
 SELECT g.id_kelompok, v.id, CAST(g.rw AS UNSIGNED), g.nama_kelompok, g.nama_ketua, g.nomor_kontak,
-       g.penyuluh, g.pendamping, g.luas_lahan, g.status_lahan,
+       g.luas_lahan, g.status_lahan,
        CASE UPPER(g.status_keaktifan) WHEN 'AKTIF' THEN 1 WHEN 'TIDAK AKTIF' THEN 0 END,
        g.keterangan_status, g.foto_lahan, g.foto_ketua, g.link_deskripsi, g.created_at, g.updated_at
 FROM `buruansae_lama`.`data_kelompok` g

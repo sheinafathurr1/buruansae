@@ -21,8 +21,6 @@ class CleanGroupPlaceholdersTest extends TestCase
             'land_status' => '-',
             'description_url' => '0',
             'land_area_m2' => 0,
-            'extension_officer' => 'Wina',
-            'facilitator' => 'Mega',
         ]);
     }
 
@@ -49,7 +47,7 @@ class CleanGroupPlaceholdersTest extends TestCase
         foreach (['leader_name', 'phone', 'land_status', 'description_url', 'land_area_m2'] as $column) {
             $this->assertNull($legacy->{$column}, "{$column} seharusnya kosong.");
         }
-        $this->assertSame(['Jimbaran', 'Wina', 'Mega'], [$legacy->name, $legacy->extension_officer, $legacy->facilitator]);
+        $this->assertSame('Jimbaran', $legacy->name);
         $this->assertEquals($updatedAt, $legacy->updated_at, 'Pembersihan bukan isian baru.');
 
         $this->assertSame('https://buruansae.bandung.go.id/kelompok', $spaced->fresh()->description_url);
@@ -93,8 +91,6 @@ class CleanGroupPlaceholdersTest extends TestCase
             'phone' => $group->fresh()->phone,
             'land_status' => $group->fresh()->land_status,
             'description_url' => $group->fresh()->description_url,
-            'extension_officer' => 'Wina',
-            'facilitator' => 'Mega',
         ];
 
         $this->put("/admin/kelompok/{$group->id}", $form())->assertSessionHasErrors('description_url');

@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
  * luas lahan 0 m². Spasi di awal/akhir isian tersebut juga dirapikan (mis.
  * tautan " https://..." yang ditolak validasi saat kelompok disimpan).
  *
- * Penyuluh & pendamping tidak disentuh karena wajib diisi. Aman dijalankan
- * berulang, mis. setelah impor data lama berikutnya.
+ * Nama kelompok tidak disentuh. Aman dijalankan berulang, mis. setelah impor
+ * data lama berikutnya.
  *
  *     php artisan buruansae:bersihkan-kelompok --dry-run   # lihat dulu, tanpa mengubah
  *     php artisan buruansae:bersihkan-kelompok

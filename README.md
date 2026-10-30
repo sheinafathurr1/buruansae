@@ -36,9 +36,9 @@ Fitur sama dengan aplikasi CodeIgniter `buruansae-dashboard`, disesuaikan dengan
 | Masuk / keluar | `/admin/masuk` | Login dengan username **atau** email |
 | Ringkasan | `/admin` | Angka ringkas, kartu input per sektor (berjalan / terlambat / panen bulan ini), daftar siklus yang perlu dicatat panennya |
 | Data produksi | `/admin/produksi/{sektor}` | Per sektor (8 sektor, termasuk Pembibitan): daftar dengan tab Semua / Belum panen / Terlambat / Sudah panen, pencarian kelompok, filter komoditas & kecamatan |
-| Tambah / ubah data tanam | `…/tambah`, `…/{id}/ubah` | Kelompok (dengan info penyuluh, pendamping, kelurahan), komoditas, kategori tanam, jumlah, perkiraan panen. **Perkiraan tanggal panen dihitung otomatis** dari tanggal tanam + durasi tanam komoditas. Ikan/ternak: pakan. Olahan hasil: bahan dasar, merek, resep, PIRT, halal, uji lab. Pembibitan: asal bibit |
+| Tambah / ubah data tanam | `…/tambah`, `…/{id}/ubah` | Kelompok (dengan info petugas, kelurahan, kecamatan), komoditas, kategori tanam, jumlah, perkiraan panen. **Perkiraan tanggal panen dihitung otomatis** dari tanggal tanam + durasi tanam komoditas. Ikan/ternak: pakan. Olahan hasil: bahan dasar, merek, resep, PIRT, halal, uji lab. Pembibitan: asal bibit |
 | Data panen / produksi | `…/{id}/panen` | Tanggal panen, foto hasil, penyaluran per kategori (jumlah, KK, orang), harga jual. **Jumlah panen = total konsumsi pribadi + dibagikan + dijual** (sama dengan perubahan terakhir di aplikasi lama). Ikan/ternak: jumlah ekor. Buah: pemupukan |
-| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, ketua, kontak, penyuluh, pendamping, lahan, status keaktifan, foto lahan & ketua, petugas (staf) yang mengurusnya |
+| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, petugas (staf) yang bertanggung jawab, ketua, kontak, lahan, status keaktifan, foto lahan & ketua |
 | Komoditas | `/admin/komoditas` | Tambah/ubah/hapus komoditas per sektor dengan durasi tanam dan gambar (gambar tampil di portal publik) |
 | Aktivitas petugas | `/admin/aktivitas` | Riwayat pencatatan (catat/ubah data tanam, catat/ubah panen, hapus) per akun, dengan filter petugas, jenis, dan tanggal, plus ringkasan per petugas: tanam dicatat, panen dicatat, perubahan, dihapus |
 | Pengguna & petugas | `/admin/pengguna` | Akun admin & staf: peran, status aktif, kata sandi sementara, kelompok binaan staf (cari, pilih per kecamatan) |
@@ -205,6 +205,8 @@ php artisan up
 - Tidak perlu `npm`: hasil build tampilan (`public/build`) ikut di-commit.
 - Saat pertama memperbarui ke versi dengan peran admin/staf, `migrate` menjadikan **semua akun yang sudah ada admin**
   (sama seperti hak akses sebelumnya). Setelah itu buat akun staf dan kelompok binaannya dari menu Pengguna & petugas.
+- Pembaruan yang menghapus kolom penyuluh & pendamping kelompok (diganti petugas yang ditugaskan): **backup database
+  dulu** sebelum `migrate`, karena isi kedua kolom itu ikut terhapus. Nama lamanya tetap ada di database aplikasi lama.
 - Database hasil impor data lama yang belum dibersihkan: jalankan sekali `php artisan buruansae:bersihkan-kelompok`
   (lihat [`docs/DATABASE.md`](docs/DATABASE.md#isian-0-di-data-kelompok)).
 - `git reset --hard` membuang perubahan file yang tidak di-commit di server. Isi `.env`, `storage/` (unggahan), dan

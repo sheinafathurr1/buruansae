@@ -28,13 +28,12 @@ class FarmerGroupController extends Controller
 
         $groups = FarmerGroup::query()
             ->managedBy($user)
-            ->with(['village:id,name,district_id', 'village.district:id,name'])
-            ->when($user->isAdmin(), fn ($q) => $q->with('staff:id,name'))
+            ->with(['village:id,name,district_id', 'village.district:id,name', 'staff:id,name'])
             ->withCount('productions')
             ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$search}%")
                 ->orWhere('leader_name', 'like', "%{$search}%")
-                ->orWhere('extension_officer', 'like', "%{$search}%")))
+                ->orWhereHas('staff', fn ($q) => $q->where('name', 'like', "%{$search}%"))))
             ->when($districtId, fn ($q, $id) => $q->whereHas('village', fn ($q) => $q->where('district_id', $id)))
             ->when($status === 'active', fn ($q) => $q->where('is_active', true))
             ->when($status === 'inactive', fn ($q) => $q->where('is_active', false))
@@ -77,7 +76,7 @@ class FarmerGroupController extends Controller
     {
         Gate::authorize('update', $farmerGroup);
 
-        return $this->form($farmerGroup->load(['village.district', 'staff:id']));
+        return $this->form($farmerGroup->load(['village.district', 'staff:id,name']));
     }
 
     public function update(FarmerGroupRequest $request, FarmerGroup $farmerGroup): RedirectResponse

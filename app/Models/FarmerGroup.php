@@ -24,9 +24,8 @@ class FarmerGroup extends Model
     public const PHOTO_DIRECTORY = 'images/kelompok';
 
     protected $fillable = [
-        'village_id', 'rw', 'name', 'leader_name', 'phone', 'extension_officer', 'facilitator',
-        'land_area_m2', 'land_status', 'is_active', 'status_note', 'land_photo', 'leader_photo',
-        'description_url',
+        'village_id', 'rw', 'name', 'leader_name', 'phone', 'land_area_m2', 'land_status', 'is_active',
+        'status_note', 'land_photo', 'leader_photo', 'description_url',
     ];
 
     protected function casts(): array
@@ -55,7 +54,7 @@ class FarmerGroup extends Model
         return $this->hasMany(Production::class);
     }
 
-    /** Staf yang ditugaskan mengurus kelompok ini. */
+    /** Petugas (akun staf) yang bertanggung jawab atas kelompok ini; menggantikan kolom penyuluh/pendamping lama. */
     public function staff(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withTimestamps();

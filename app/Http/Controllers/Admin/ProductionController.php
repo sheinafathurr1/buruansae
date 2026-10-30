@@ -61,7 +61,7 @@ class ProductionController extends Controller
             ->when($status === 'harvested', fn ($q) => $q->whereNotNull('harvest_date'))
             ->with([
                 'commodity:id,name',
-                'farmerGroup:id,name,rw,village_id,extension_officer,facilitator',
+                'farmerGroup:id,name,rw,village_id',
                 'farmerGroup.village:id,name,district_id',
                 'farmerGroup.village.district:id,name',
                 'creator:id,name',
@@ -144,9 +144,9 @@ class ProductionController extends Controller
             'commodities' => Commodity::query()->where('sector_id', $sectorModel->id)->orderBy('name')->get(['id', 'name', 'growing_days']),
             'groups' => FarmerGroup::query()
                 ->managedBy($user)
-                ->with(['village:id,name,district_id', 'village.district:id,name'])
+                ->with(['village:id,name,district_id', 'village.district:id,name', 'staff:id,name'])
                 ->orderBy('name')
-                ->get(['id', 'name', 'rw', 'village_id', 'extension_officer', 'facilitator']),
+                ->get(['id', 'name', 'rw', 'village_id']),
         ]);
     }
 
