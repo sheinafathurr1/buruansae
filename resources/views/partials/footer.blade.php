@@ -35,7 +35,13 @@
                     <ul class="mt-3 space-y-2 text-sm">
                         <li><a href="{{ route('map') }}" class="hover:text-white hover:underline">Peta sebaran kelompok</a></li>
                         <li><a href="{{ route('news.index') }}" class="hover:text-white hover:underline">Berita</a></li>
-                        <li><a href="{{ route('login') }}" class="hover:text-white hover:underline" rel="nofollow">Masuk pengelola</a></li>
+                        <li>
+                            @auth
+                                <a href="{{ route('admin.dashboard') }}" class="hover:text-white hover:underline">Dashboard pegawai</a>
+                            @else
+                                <a href="{{ route('login') }}" class="hover:text-white hover:underline" rel="nofollow">Masuk pegawai</a>
+                            @endauth
+                        </li>
                     </ul>
                 </div>
 
