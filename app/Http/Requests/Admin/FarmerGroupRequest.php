@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\UserRole;
+use App\Models\FarmerGroup;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,7 +13,11 @@ class FarmerGroupRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        $group = $this->route('farmerGroup');
+
+        return $group
+            ? $this->user()->can('update', $group)
+            : $this->user()->can('create', FarmerGroup::class);
     }
 
     protected function prepareForValidation(): void
@@ -25,14 +31,12 @@ class FarmerGroupRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:150'],
             'village_id' => ['required', 'integer', Rule::exists('villages', 'id')],
             'rw' => ['nullable', 'integer', 'min:1', 'max:255'],
             'leader_name' => ['nullable', 'string', 'max:150'],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]+$/'],
-            'extension_officer' => ['required', 'string', 'max:150'],
-            'facilitator' => ['required', 'string', 'max:150'],
             'land_area_m2' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'land_status' => ['nullable', 'string', 'max:50'],
             'is_active' => ['nullable', 'boolean'],
@@ -43,6 +47,16 @@ class FarmerGroupRequest extends FormRequest
             'remove_land_photo' => ['nullable', 'boolean'],
             'remove_leader_photo' => ['nullable', 'boolean'],
         ];
+
+        if ($this->user()->isAdmin()) {
+            $rules['staff_ids'] = ['nullable', 'array'];
+            $rules['staff_ids.*'] = ['integer', 'distinct', Rule::exists('users', 'id')->where('role', UserRole::Staff->value)];
+        } else {
+            // Nama & wilayah menentukan kelompok mana ini; hanya admin yang mengubahnya.
+            unset($rules['name'], $rules['village_id'], $rules['rw']);
+        }
+
+        return $rules;
     }
 
     public function attributes(): array
@@ -53,8 +67,6 @@ class FarmerGroupRequest extends FormRequest
             'rw' => 'RW',
             'leader_name' => 'nama ketua',
             'phone' => 'nomor kontak',
-            'extension_officer' => 'penyuluh',
-            'facilitator' => 'pendamping',
             'land_area_m2' => 'luas lahan',
             'land_status' => 'status lahan',
             'is_active' => 'status keaktifan',
@@ -62,6 +74,8 @@ class FarmerGroupRequest extends FormRequest
             'description_url' => 'tautan',
             'land_photo' => 'foto lahan',
             'leader_photo' => 'foto ketua',
+            'staff_ids' => 'petugas',
+            'staff_ids.*' => 'petugas',
         ];
     }
 

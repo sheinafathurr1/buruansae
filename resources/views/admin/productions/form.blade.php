@@ -5,8 +5,7 @@
     $feed = $editing ? $production->inputs->first(fn ($i) => $i->type === \App\Enums\InputType::Feed) : null;
 
     $groupInfo = $groups->mapWithKeys(fn ($g) => [$g->id => [
-        'officer' => $g->extension_officer,
-        'facilitator' => $g->facilitator,
+        'staff' => $g->staff->pluck('name')->implode(', '),
         'village' => display_name($g->village?->name),
         'district' => display_name($g->village?->district?->name),
         'rw' => $g->rw,
@@ -24,6 +23,12 @@
 <x-layouts.admin :title="$title">
     <x-admin.page-header :title="$title" :image="$sector->image()"
                          :breadcrumbs="[['Data '.$sector->label(), route('admin.productions.index', $sector)], [$editing ? 'Ubah' : 'Tambah', null]]" />
+
+    @if ($editing && $production->creator)
+        <p class="mb-4 max-w-4xl text-sm text-slate-600">
+            Dicatat oleh <span class="font-semibold text-slate-800">{{ $production->creator->name }}</span>@if ($production->editor && $production->editor->isNot($production->creator)), terakhir diubah oleh <span class="font-semibold text-slate-800">{{ $production->editor->name }}</span>@endif.
+        </p>
+    @endif
 
     <form method="POST" novalidate class="max-w-4xl space-y-6"
           action="{{ $editing ? route('admin.productions.update', [$sector, $production]) : route('admin.productions.store', $sector) }}"
@@ -49,8 +54,7 @@
                     @endforeach
                 </x-form.select>
                 <dl class="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:col-span-2 sm:grid-cols-4" x-show="group" x-cloak aria-live="polite">
-                    <div><dt class="text-xs text-slate-500">Penyuluh</dt><dd class="font-semibold text-slate-800" x-text="group?.officer || '–'"></dd></div>
-                    <div><dt class="text-xs text-slate-500">Pendamping</dt><dd class="font-semibold text-slate-800" x-text="group?.facilitator || '–'"></dd></div>
+                    <div class="sm:col-span-2"><dt class="text-xs text-slate-500">Petugas</dt><dd class="font-semibold text-slate-800" x-text="group?.staff || 'Belum ada petugas'"></dd></div>
                     <div><dt class="text-xs text-slate-500">Kelurahan</dt><dd class="font-semibold text-slate-800" x-text="group ? group.village + (group.rw ? ' · RW ' + group.rw : '') : '–'"></dd></div>
                     <div><dt class="text-xs text-slate-500">Kecamatan</dt><dd class="font-semibold text-slate-800" x-text="group?.district || '–'"></dd></div>
                 </dl>

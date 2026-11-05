@@ -36,16 +36,45 @@ Fitur sama dengan aplikasi CodeIgniter `buruansae-dashboard`, disesuaikan dengan
 | Masuk / keluar | `/admin/masuk` | Login dengan username **atau** email |
 | Ringkasan | `/admin` | Angka ringkas, kartu input per sektor (berjalan / terlambat / panen bulan ini), daftar siklus yang perlu dicatat panennya |
 | Data produksi | `/admin/produksi/{sektor}` | Per sektor (8 sektor, termasuk Pembibitan): daftar dengan tab Semua / Belum panen / Terlambat / Sudah panen, pencarian kelompok, filter komoditas & kecamatan |
-| Tambah / ubah data tanam | `…/tambah`, `…/{id}/ubah` | Kelompok (dengan info penyuluh, pendamping, kelurahan), komoditas, kategori tanam, jumlah, perkiraan panen. **Perkiraan tanggal panen dihitung otomatis** dari tanggal tanam + durasi tanam komoditas. Ikan/ternak: pakan. Olahan hasil: bahan dasar, merek, resep, PIRT, halal, uji lab. Pembibitan: asal bibit |
+| Tambah / ubah data tanam | `…/tambah`, `…/{id}/ubah` | Kelompok (dengan info petugas, kelurahan, kecamatan), komoditas, kategori tanam, jumlah, perkiraan panen. **Perkiraan tanggal panen dihitung otomatis** dari tanggal tanam + durasi tanam komoditas. Ikan/ternak: pakan. Olahan hasil: bahan dasar, merek, resep, PIRT, halal, uji lab. Pembibitan: asal bibit |
 | Data panen / produksi | `…/{id}/panen` | Tanggal panen, foto hasil, penyaluran per kategori (jumlah, KK, orang), harga jual. **Jumlah panen = total konsumsi pribadi + dibagikan + dijual** (sama dengan perubahan terakhir di aplikasi lama). Ikan/ternak: jumlah ekor. Buah: pemupukan |
-| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, ketua, kontak, penyuluh, pendamping, lahan, status keaktifan, foto lahan & ketua |
+| Kelompok | `/admin/kelompok` | Tambah/ubah/hapus kelompok: kelurahan, RW, petugas (staf) yang bertanggung jawab, ketua, kontak, lahan, status keaktifan, foto lahan & ketua |
 | Komoditas | `/admin/komoditas` | Tambah/ubah/hapus komoditas per sektor dengan durasi tanam dan gambar (gambar tampil di portal publik) |
+| Aktivitas petugas | `/admin/aktivitas` | Riwayat pencatatan (catat/ubah data tanam, catat/ubah panen, hapus) per akun, dengan filter petugas, jenis, dan tanggal, plus ringkasan per petugas: tanam dicatat, panen dicatat, perubahan, dihapus |
+| Pengguna & petugas | `/admin/pengguna` | Akun admin & staf: peran, status aktif, kata sandi sementara, kelompok binaan staf (cari, pilih per kecamatan) |
 | Profil | `/admin/profil` | Ubah nama, email, dan kata sandi sendiri |
+
+### Peran: admin dan staf
+
+| | Admin | Staf (pegawai DKPP / penyuluh) |
+|---|---|---|
+| Ringkasan | Seluruh kota, ditambah pemantauan petugas (kelompok tanpa petugas; per staf: tanam & panen yang dicatat bulan ini, panen terlambat) dan aktivitas terbaru | Hanya kelompok binaannya: daftar kelompok dengan status, siklus yang perlu dicatat panennya |
+| Data tanam, panen, penyaluran | Semua kelompok | Hanya kelompok binaan; kelompok lain tidak terlihat |
+| Hapus data produksi | Semua | Hanya data yang ia catat sendiri |
+| Profil kelompok | Tambah, ubah, hapus | Ubah kelompok binaan, kecuali nama & wilayah (kelurahan, RW) |
+| Komoditas, Pengguna, Aktivitas petugas | Ya | Tidak ada akses |
+
+- Satu kelompok boleh dipegang beberapa staf. Hak akses mengikuti **penugasan saat ini**, bukan siapa yang dulu
+  mencatat: petugas pengganti bisa melanjutkan dan memperbaiki data lama kelompok itu.
+- Pembatasan dicek di server (`app/Policies`, query yang dibatasi per peran, dan validasi pilihan kelompok), jadi
+  mengganti ID di alamat URL atau mengirim form untuk kelompok lain ditolak (403).
+- Setiap data produksi mencatat **siapa yang mengisi dan terakhir mengubah** (`created_by`, `updated_by`), dan setiap
+  pencatatan masuk ke **riwayat aktivitas** (`activity_logs`) untuk mengukur kinerja petugas. Riwayat dimulai sejak fitur
+  ini dipasang; data impor dari aplikasi lama tidak punya riwayat.
+- Akun baru dan kata sandi yang disetel ulang admin bersifat **sementara**: pengguna wajib menggantinya sebelum
+  bisa membuka halaman lain.
+- Akun yang sudah pernah mencatat data tidak bisa dihapus (agar riwayatnya jelas); nonaktifkan saja. Admin tidak bisa
+  menurunkan peran, menonaktifkan, atau menghapus akunnya sendiri.
 
 Perbedaan dari aplikasi CodeIgniter:
 
 - **Keamanan login**: dibatasi 5 percobaan per menit per akun (+20 per menit per IP), akun bisa dinonaktifkan, tidak ada
-  pendaftaran akun publik. Akun dibuat lewat perintah `buruansae:user` (lihat bawah).
+  pendaftaran akun publik. Akun dibuat admin dari menu Pengguna (akun admin pertama lewat perintah `buruansae:user`).
+- **Peran admin & staf** dengan kelompok binaan (aplikasi lama: semua akun punya akses yang sama).
+- **Halaman kedaluwarsa (419)**: form yang dibuka terlalu lama atau sesinya berganti (masuk/keluar di tab lain)
+  tidak lagi menampilkan halaman error. Pengguna dikembalikan ke form dengan pesan; username/isian tetap terisi, kecuali
+  kata sandi. Halaman dashboard & masuk dikirim dengan `Cache-Control: no-store` agar tombol Back tidak memunculkan form
+  lama (dan data dashboard tidak terlihat lagi setelah keluar).
 - **Hapus kelompok** kini *soft delete*: data produksinya tetap tersimpan tetapi tidak lagi dihitung di portal
   (dulu seluruh data produksi kelompok ikut terhapus permanen).
 - **Komoditas yang sudah dipakai** tidak bisa dihapus atau dipindah sektor.
@@ -56,9 +85,13 @@ Perbedaan dari aplikasi CodeIgniter:
 
 ### Membuat akun pengelola
 
+Akun staf dan admin lain dibuat dari menu **Pengguna & petugas**. Perintah server dipakai untuk akun admin pertama
+atau bila tidak ada admin yang bisa masuk:
+
 ```bash
-php artisan buruansae:user admin --email=admin@bandung.go.id --name="Admin DKPP"   # akun baru (kata sandi ditanyakan)
+php artisan buruansae:user admin --email=admin@bandung.go.id --name="Admin DKPP"   # akun baru = admin (kata sandi ditanyakan)
 php artisan buruansae:user admin                                                   # setel ulang kata sandi
+php artisan buruansae:user budi --role=staff                                       # ubah peran (admin | staff)
 php artisan buruansae:user penyuluh1 --deactivate                                  # nonaktifkan (--activate untuk mengaktifkan)
 ```
 
@@ -107,13 +140,17 @@ jalankan `npm install` lalu `npm run dev` (selama mengembangkan) atau `npm run b
 php artisan test
 ```
 
-63 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
+98 pengujian (unit + fitur) memakai SQLite in-memory, antara lain:
 
 - **Portal**: perhitungan dashboard terhadap data yang totalnya dihitung manual (termasuk kelompok yang sudah dihapus
   & sektor lain yang tidak boleh ikut terhitung), validasi filter, semua halaman, API peta, header keamanan.
 - **Dashboard**: login (username/email, akun nonaktif, pembatasan percobaan), CRUD kelompok & komoditas (termasuk foto),
   input tanam per sektor, input panen (total = jumlah penyaluran, validasi tanggal/foto/harga), hapus data, dan
   pengosongan cache portal setelah data berubah.
+- **Peran**: staf tidak bisa melihat, mengisi, mengubah, atau menghapus data kelompok lain (termasuk lewat URL/form
+  yang diubah), hanya menghapus data yang ia catat, tidak bisa mengubah nama/wilayah kelompok atau membuka menu admin;
+  akses mengikuti penugasan terbaru; menu Pengguna (kata sandi sementara, penugasan, admin tidak bisa mengunci diri);
+  riwayat aktivitas (setiap langkah tercatat atas nama pencatatnya, ringkasan & filter per petugas).
 
 Pengujian yang sama juga lolos di MariaDB 10.11.
 
@@ -141,6 +178,18 @@ php artisan icons:cache
   biasa); bila hosting tidak mengizinkan symlink, gambar disajikan lewat route cadangan. Rincian di
   [`docs/DATABASE.md`](docs/DATABASE.md#gambar-dari-aplikasi-lama).
 - Setelah mengubah `.env` di server, jalankan `php artisan optimize` lagi.
+- `composer install` gagal dengan *Your Composer dependencies require a PHP version ">= 8.3.0"* berarti PHP di
+  terminal masih versi lama. Pilih PHP 8.3 untuk website (hPanel Hostinger: Websites → Manage → Advanced →
+  PHP Configuration), lalu buka ulang SSH. Bila `php -v` tetap versi lama, dahulukan biner 8.3 di `PATH`
+  (di Hostinger umumnya `/opt/alt/php83/usr/bin/php`; cek dengan `ls -d /opt/alt/php8*`):
+
+  ```bash
+  mkdir -p ~/bin && ln -sf /opt/alt/php83/usr/bin/php ~/bin/php
+  echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+  php -v && composer --version    # keduanya harus menyebut PHP 8.3.x
+  ```
+
+  Jangan memakai `--ignore-platform-reqs`: kode butuh PHP 8.3, jadi aplikasi tetap akan gagal saat dijalankan.
 
 ### Deploy ulang (memperbarui aplikasi yang sudah berjalan)
 
@@ -158,6 +207,12 @@ php artisan up
 ```
 
 - Tidak perlu `npm`: hasil build tampilan (`public/build`) ikut di-commit.
+- Saat pertama memperbarui ke versi dengan peran admin/staf, `migrate` menjadikan **semua akun yang sudah ada admin**
+  (sama seperti hak akses sebelumnya). Setelah itu buat akun staf dan kelompok binaannya dari menu Pengguna & petugas.
+- Pembaruan yang menghapus kolom penyuluh & pendamping kelompok (diganti petugas yang ditugaskan): **backup database
+  dulu** sebelum `migrate`, karena isi kedua kolom itu ikut terhapus. Nama lamanya tetap ada di database aplikasi lama.
+- Database hasil impor data lama yang belum dibersihkan: jalankan sekali `php artisan buruansae:bersihkan-kelompok`
+  (lihat [`docs/DATABASE.md`](docs/DATABASE.md#isian-0-di-data-kelompok)).
 - `git reset --hard` membuang perubahan file yang tidak di-commit di server. Isi `.env`, `storage/` (unggahan), dan
   `vendor/` tidak ikut git, jadi aman.
 - Jika memakai fitur Git di hPanel Hostinger (deploy otomatis), jalankan tetap perintah `composer install` sampai
@@ -172,6 +227,7 @@ Ringkasnya:
 mysql -u root buruansae_lama < database/sql/persiapan_data_lama.sql   # di salinan database lama
 php artisan migrate:fresh --seed
 mysql -u root buruansae < database/sql/import_data_lama.sql
+php artisan buruansae:bersihkan-kelompok     # kosongkan isian "0" / "-" dari aplikasi lama
 php artisan cache:clear
 ```
 
@@ -179,13 +235,15 @@ php artisan cache:clear
 
 ```
 app/Enums/SectorType.php            8 sektor: slug URL ↔ kode sektor di DB, label, satuan, isian form per sektor
+app/Enums/UserRole.php              peran akun: admin, staff
 app/Services/SectorDashboard.php    angka dashboard sektor publik (query agregat)
 app/Services/HomeStatistics.php     angka ringkas beranda (di-cache, dikosongkan otomatis saat data berubah)
 app/Services/ProductionRecorder.php simpan data tanam, panen & penyaluran, hapus (dashboard pengelola)
 app/Http/Controllers/…              portal publik (Home, Sector, SectorVillage, News, Map, Api/Location)
-app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, Profile)
+app/Http/Controllers/Admin/…        dashboard pengelola (Auth, Dashboard, FarmerGroup, Commodity, Production, Harvest, User, Activity, Profile)
+app/Policies/…                      hak akses per kelompok (staf hanya kelompok binaan); gate "admin" di AppServiceProvider
 app/Http/Requests/…                 validasi form (filter publik, login, form dashboard)
-app/Console/Commands/ManageUser.php perintah buruansae:user
+app/Console/Commands/…              perintah buruansae:user (akun) & buruansae:bersihkan-kelompok (isian "0" data lama)
 app/Support/…                       format angka/tanggal, penyimpanan foto, cache portal
 routes/web.php, admin.php, api.php  rute portal, dashboard (/admin), dan API
 config/buruansae.php                kontak DKPP & pengaturan peta

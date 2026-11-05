@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/** Header keamanan dasar untuk seluruh halaman publik. */
+/** Header keamanan dasar untuk seluruh halaman. */
 class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
@@ -18,6 +18,13 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         // geolocation=(self): fitur "Gunakan lokasi saya" di peta; tetap tertutup untuk iframe dari situs lain.
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=()');
+
+        // Dashboard & halaman masuk tidak disimpan browser (termasuk cache tombol Back): form lama
+        // membawa token CSRF yang sudah tidak berlaku (error 419), dan data dashboard tidak
+        // tampil lagi lewat tombol Back setelah keluar.
+        if ($request->is('admin', 'admin/*')) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
 
         if ($request->isSecure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

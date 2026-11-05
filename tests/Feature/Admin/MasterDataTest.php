@@ -21,7 +21,7 @@ class MasterDataTest extends TestCase
     {
         parent::setUp();
         Storage::fake('public');
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_group_list_and_search(): void
@@ -45,8 +45,6 @@ class MasterDataTest extends TestCase
             'rw' => 5,
             'leader_name' => 'Ibu Euis',
             'phone' => '0812-3456-7890',
-            'extension_officer' => 'Pak Ujang',
-            'facilitator' => 'Bu Neneng',
             'land_area_m2' => '120.5',
             'is_active' => '1',
             'land_photo' => UploadedFile::fake()->image('lahan.jpg', 2400, 1600),
@@ -65,7 +63,6 @@ class MasterDataTest extends TestCase
             ->assertSessionHasErrors([
                 'name' => 'Nama kelompok wajib diisi.',
                 'village_id' => 'Kelurahan wajib diisi.',
-                'extension_officer' => 'Penyuluh wajib diisi.',
             ]);
     }
 
@@ -78,8 +75,7 @@ class MasterDataTest extends TestCase
         $this->get("/admin/kelompok/{$group->id}/ubah")->assertOk()->assertSee($group->name);
 
         $this->put("/admin/kelompok/{$group->id}", [
-            'name' => 'Nama Baru', 'village_id' => $group->village_id, 'extension_officer' => 'A', 'facilitator' => 'B',
-            'is_active' => '', 'remove_land_photo' => '1',
+            'name' => 'Nama Baru', 'village_id' => $group->village_id, 'is_active' => '', 'remove_land_photo' => '1',
         ])->assertSessionHasNoErrors();
 
         $group->refresh();

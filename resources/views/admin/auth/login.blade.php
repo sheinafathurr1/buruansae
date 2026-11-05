@@ -33,12 +33,17 @@
                 @if (session('status'))
                     <p class="mt-6 rounded-xl bg-brand-50 p-3 text-sm text-brand-900 ring-1 ring-brand-200" role="status">{{ session('status') }}</p>
                 @endif
+                @if (session('warning'))
+                    <p class="mt-6 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200" role="alert">{{ session('warning') }}</p>
+                @endif
 
-                <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5" novalidate>
+                {{-- busy: pengecekan kata sandi sengaja lambat (±0,3 dtk, bcrypt); tombol menunjukkan proses & mencegah klik ganda. --}}
+                <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5" novalidate x-data="{ busy: false }" @submit="busy = true">
                     @csrf
-                    <x-form.input name="login" label="Username atau email" :value="old('login')" required autofocus autocomplete="username" />
+                    {{-- Username sudah terisi (gagal masuk / halaman kedaluwarsa): langsung ke kata sandi. --}}
+                    <x-form.input name="login" label="Username atau email" :value="old('login')" required :autofocus="! old('login')" autocomplete="username" />
                     <div x-data="{ show: false }">
-                        <x-form.input name="password" label="Kata sandi" type="password" x-bind:type="show ? 'text' : 'password'" required autocomplete="current-password" />
+                        <x-form.input name="password" label="Kata sandi" type="password" x-bind:type="show ? 'text' : 'password'" required :autofocus="(bool) old('login')" autocomplete="current-password" />
                         <label class="mt-2 flex items-center gap-2 text-sm text-slate-600">
                             <input type="checkbox" x-model="show" class="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Tampilkan kata sandi
                         </label>
@@ -47,8 +52,13 @@
                         <input type="checkbox" name="remember" value="1" @checked(old('remember')) class="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
                         Ingat saya di perangkat ini
                     </label>
-                    <button type="submit" class="btn btn-primary w-full py-3">
-                        <x-heroicon-o-arrow-right-end-on-rectangle class="size-5" aria-hidden="true" /> Masuk
+                    <button type="submit" class="btn btn-primary w-full py-3" :disabled="busy" :aria-busy="busy.toString()">
+                        <x-heroicon-o-arrow-right-end-on-rectangle class="size-5" aria-hidden="true" x-show="! busy" />
+                        <svg x-show="busy" x-cloak class="size-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.3" stroke-width="3" />
+                            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                        </svg>
+                        <span x-text="busy ? 'Memproses…' : 'Masuk'">Masuk</span>
                     </button>
                 </form>
 

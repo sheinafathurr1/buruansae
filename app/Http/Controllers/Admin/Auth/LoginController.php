@@ -20,6 +20,7 @@ class LoginController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        $request->user()->recordLogin();
 
         return redirect()->intended(route('admin.dashboard'));
     }

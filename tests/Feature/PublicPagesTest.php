@@ -6,6 +6,7 @@ use App\Enums\SectorType;
 use App\Models\Commodity;
 use App\Models\FarmerGroup;
 use App\Models\Production;
+use App\Models\User;
 use App\Models\Village;
 use App\Services\HomeStatistics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -135,6 +136,18 @@ class PublicPagesTest extends TestCase
         $this->get('/storage/images/panen/tidak-ada.jpg')->assertNotFound();
         $this->get('/storage/images/panen/../../../.env')->assertNotFound();
         $this->get('/storage/images/skrip.php')->assertNotFound();
+    }
+
+    public function test_header_offers_employee_login_or_dashboard(): void
+    {
+        $this->get('/')->assertOk()
+            ->assertSee('Masuk pegawai')
+            ->assertSee('href="'.route('login').'"', false);
+
+        $this->actingAs(User::factory()->create());
+        $this->get('/map')->assertOk()
+            ->assertDontSee('Masuk pegawai')
+            ->assertSee('href="'.route('admin.dashboard').'"', false);
     }
 
     public function test_security_headers_are_sent(): void

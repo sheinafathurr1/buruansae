@@ -11,6 +11,7 @@ use App\Models\RecipientCategory;
 use App\Models\Sector;
 use App\Services\ProductionRecorder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /** Form "Data panen" (atau "Data produksi" untuk olahan hasil). */
@@ -21,6 +22,7 @@ class HarvestController extends Controller
     public function edit(SectorType $sector, Production $production): View
     {
         ProductionController::ensureBelongsToSector($sector, $production);
+        Gate::authorize('update', $production);
 
         $production->load([
             'commodity:id,name',

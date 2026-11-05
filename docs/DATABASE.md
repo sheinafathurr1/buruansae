@@ -4,8 +4,11 @@ Struktur hasil redesign (fase 2) yang dulu dikirim di folder `newdb/`, kini suda
 
 ```
 app/Enums/PlantingCategory.php, InputType.php   PHP enum + label Indonesia
-app/Models/                                     12 model + User (username, is_active)
+app/Models/                                     12 model + User (username, role, is_active)
 database/migrations/2026_09_26_*                13 migration struktur baru
+database/migrations/2026_10_20_*                peran akun, kelompok binaan staf, pencatat data produksi
+database/migrations/2026_10_21_*                riwayat aktivitas pencatatan (activity_logs)
+database/migrations/2026_10_30_*                hapus kolom penyuluh/pendamping (diganti petugas yang ditugaskan)
 database/seeders/SectorSeeder.php               8 sektor (data acuan)
 database/seeders/RecipientCategorySeeder.php    10 kategori penerima (data acuan)
 database/seeders/DemoSeeder.php                 data contoh untuk lokal/staging
@@ -41,7 +44,7 @@ Perbedaan dari paket `newdb/` asli:
 |---|---|
 | `districts` | Kecamatan |
 | `villages` | Kelurahan (+ `district_id`, `latitude`, `longitude`) |
-| `farmer_groups` | Kelompok Buruan SAE (RW, ketua, penyuluh, pendamping, luas & status lahan, `is_active`) |
+| `farmer_groups` | Kelompok Buruan SAE (RW, ketua, kontak, luas & status lahan, `is_active`). Penanggung jawabnya: petugas di `farmer_group_user` |
 | `sectors` | 8 sektor + `harvest_unit` (satuan hasil: `kg`, atau `pohon` untuk bibit) |
 | `commodities` | Komoditas per sektor (+ `growing_days`, `image`) |
 | `productions` | Satu siklus tanam → panen untuk **semua** sektor |
@@ -51,6 +54,17 @@ Perbedaan dari paket `newdb/` asli:
 | `processed_product_details` | Detail produk olahan: bahan dasar, merek, resep, uji lab, halal, PIRT |
 | `seedling_details` | Detail bibit: asal bibit |
 | `monthly_distribution_recaps` | Rekap distribusi bulanan per kelurahan |
+| `users` | Akun dashboard: `role` (`admin` / `staff`), `is_active`, `must_change_password` (kata sandi sementara dari admin), `last_login_at` |
+| `farmer_group_user` | Kelompok binaan staf (banyak ke banyak: satu kelompok boleh dipegang beberapa staf) |
+| `activity_logs` | Riwayat pencatatan per akun: `action` (catat/ubah data tanam, catat/ubah panen, hapus), sektor, produksi, kelompok, salinan nama komoditas & keterangan (mis. "8,5 kg") |
+
+`productions.created_by` / `updated_by` (→ `users`, kosong untuk data impor) mencatat siapa yang mengisi dan terakhir
+mengubah data. Bila akun dihapus nilainya menjadi NULL, tetapi dashboard hanya mengizinkan hapus akun yang belum pernah
+mencatat data.
+
+`activity_logs` diisi oleh `App\Services\ProductionRecorder` atas nama akun yang login (impor & seeder tidak
+tercatat). Nama komoditas dan keterangan disalin saat dicatat, jadi riwayat tetap terbaca walau datanya kemudian
+dihapus (`production_id` menjadi NULL).
 
 Relasi utama: `districts` → `villages` → `farmer_groups` → `productions` ← `commodities` ← `sectors`;
 `productions` → `distributions` ← `recipient_categories`.
@@ -73,8 +87,7 @@ Relasi utama: `districts` → `villages` → `farmer_groups` → `productions` �
 | Kolom lama | Kolom baru |
 |---|---|
 | `nama_ketua` | `leader_name` |
-| `penyuluh` | `extension_officer` |
-| `pendamping` | `facilitator` |
+| `penyuluh`, `pendamping` | tidak dipindah: diganti petugas (akun staf) yang ditugaskan admin, tabel `farmer_group_user` |
 | `status_keaktifan` ('Aktif') | `is_active` (true / false / NULL = belum diketahui) |
 | `tanggal_tanam`, `tanggal_produksi`, `tanggal_masuk` | `start_date` |
 | `jumlah_tanam`, `jumlah_ikan`, `jumlah_ternak`, `jumlah_semai`, `jumlah_sampah` | `initial_quantity` |
@@ -118,11 +131,16 @@ Dikerjakan di komputer lokal (XAMPP/Laragon), lalu hasilnya diunggah ke hosting.
    ```
 4. **Cek hasil verifikasi** di akhir output: setiap tabel harus `baris_berbeda = 0`, dan query distribusi tidak
    mengembalikan baris sama sekali.
-5. **Setel ulang password** (lihat di bawah), lalu `php artisan cache:clear` supaya angka beranda & peta diperbarui.
-6. **Unggah ke hosting:** export database `buruansae`, lalu import ke database **baru yang masih kosong** di hosting.
+5. **Bersihkan isian "0"** di data kelompok (sesudah verifikasi, karena verifikasi membandingkan dengan data lama apa
+   adanya). Lihat [Isian "0" di data kelompok](#isian-0-di-data-kelompok).
+   ```bash
+   php artisan buruansae:bersihkan-kelompok
+   ```
+6. **Setel ulang password** (lihat di bawah), lalu `php artisan cache:clear` supaya angka beranda & peta diperbarui.
+7. **Unggah ke hosting:** export database `buruansae`, lalu import ke database **baru yang masih kosong** di hosting.
    Jangan import ke database aplikasi lama: nama tabel `users` dan `migrations` sama, dan dump berisi
    `DROP TABLE IF EXISTS`.
-7. **File gambar.** Kolom database hanya menyimpan nama file. Foto lama sudah ada di repo (lihat
+8. **File gambar.** Kolom database hanya menyimpan nama file. Foto lama sudah ada di repo (lihat
    [Gambar dari aplikasi lama](#gambar-dari-aplikasi-lama)); setelah deploy, jalankan sekali
    `database/sql/rapikan_gambar_lama.sql` di database hosting, lalu `php artisan storage:link`.
 
@@ -187,6 +205,25 @@ produksi tetapi belum ada di master (mis. SINGKONG di sektor sayur) ditambahkan 
 Angka lama bertipe FLOAT (1.2 tersimpan 1.2000000477), jadi verifikasi skrip impor membandingkan setelah angka lama
 dikonversi ke tipe DECIMAL kolom barunya. Skrip persiapan memastikan konversi itu tidak membulatkan nilai apa pun.
 
+### Isian "0" di data kelompok
+
+Aplikasi lama mengisi `0`, `00`, atau `-` sebagai pengganti "kosong". Di data produksi terakhir: 41 kelompok berisi `0`
+sekaligus di nama ketua, kontak, luas & status lahan, dan tautan; beberapa kelompok lain berisi `-`/`00` di ketua,
+kontak, atau status lahan; dua tautan diawali spasi. Tautan `0` dan tautan berspasi ditolak validasi saat profil
+kelompok disimpan dari dashboard.
+
+Impor menyalin isian itu apa adanya (supaya verifikasi baris per baris tetap berlaku), lalu perintah berikut
+mengosongkannya (NULL) dan merapikan spasi di awal/akhir:
+
+```bash
+php artisan buruansae:bersihkan-kelompok --dry-run   # lihat jumlahnya dulu, tanpa mengubah data
+php artisan buruansae:bersihkan-kelompok             # jalankan (minta konfirmasi; --force untuk melewatinya)
+```
+
+Yang dibersihkan hanya kolom opsional: nama ketua, nomor kontak, status lahan, tautan, dan luas lahan `0` m². Nama
+kelompok dan `updated_at` tidak diubah. Aman dijalankan berulang dan juga di database yang
+sudah berjalan di hosting.
+
 ### Password lama tidak bisa dipakai
 
 Myth/Auth menyimpan `bcrypt(base64(sha384(password)))`, sedangkan Laravel memakai `bcrypt(password)`. Hash lama tetap
@@ -196,13 +233,13 @@ disalin, tetapi login ke dashboard dengan password lama akan gagal. Setel ulang 
 php artisan buruansae:user namauser        # kata sandi baru ditanyakan
 ```
 
+Aplikasi lama tidak membedakan hak akses, jadi semua akun hasil impor menjadi **admin**.
+
 ## Hal yang masih perlu diputuskan
 
 - **Aturan tanggal.** CHECK `harvest_date >= start_date` di migration `productions` masih dikomentari karena data lama
   punya ±114 baris panen sebelum tanam. Aktifkan setelah data itu dibetulkan.
 - **Data uji** di database lama (mis. `data_sampah` id 1 yang semua nilainya 1) sebaiknya dihapus sebelum impor.
-- **Hak akses.** Semua akun aktif di dashboard `/admin` punya akses yang sama (seperti aplikasi CodeIgniter lama).
-  Bila perlu membedakan admin dan penyuluh, pasang `spatie/laravel-permission`.
 - **Masa transisi.** Selama aplikasi CodeIgniter lama masih dipakai, data yang diinput di sana masuk ke tabel lama.
   Hentikan input di aplikasi lama sebelum impor terakhir, lalu gunakan dashboard `/admin` ini.
 - **Wilayah.** Kecamatan & kelurahan (termasuk koordinat peta) berasal dari impor data lama; dashboard belum punya

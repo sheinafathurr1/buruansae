@@ -69,10 +69,20 @@
             </ul>
         </nav>
 
-        <div class="hidden items-center xl:flex">
-            <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="button button-outline">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('map', ['lokasi' => 'saya']) }}" class="button button-outline hidden xl:inline-flex">
                 <x-heroicon-o-map-pin class="size-4" aria-hidden="true" /> Cari kelompok terdekat
             </a>
+            {{-- Pintu masuk dashboard untuk pegawai DKPP/petugas; yang sudah masuk langsung ke dashboard. --}}
+            @auth
+                <a href="{{ route('admin.dashboard') }}" class="button button-primary px-4">
+                    <x-heroicon-o-squares-2x2 class="size-4" aria-hidden="true" /> Dashboard
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="button button-primary px-4" rel="nofollow">
+                    <x-heroicon-o-arrow-right-end-on-rectangle class="size-4" aria-hidden="true" /> Masuk pegawai
+                </a>
+            @endauth
         </div>
     </div>
 </header>

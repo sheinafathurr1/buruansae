@@ -4,7 +4,9 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\SectorType;
 use App\Models\Commodity;
+use App\Models\Production;
 use App\Models\Sector;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -14,7 +16,11 @@ class ProductionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $production = $this->route('production');
+
+        return $production
+            ? $this->user()->can('update', $production)
+            : $this->user()->can('create', Production::class);
     }
 
     public function sectorType(): SectorType
@@ -29,7 +35,14 @@ class ProductionRequest extends FormRequest
         $categories = array_map(fn ($c) => $c->value, $sector->plantingCategories());
 
         return [
-            'farmer_group_id' => ['required', 'integer', Rule::exists('farmer_groups', 'id')->whereNull('deleted_at')],
+            'farmer_group_id' => [
+                'required', 'integer', Rule::exists('farmer_groups', 'id')->whereNull('deleted_at'),
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (! $this->user()->managesGroup((int) $value)) {
+                        $fail('Anda hanya dapat mengisi data untuk kelompok binaan Anda.');
+                    }
+                },
+            ],
             'commodity_id' => ['required', 'integer', Rule::exists('commodities', 'id')->where('sector_id', $sectorId)],
             'planting_category' => [Rule::requiredIf($categories !== []), 'nullable', Rule::in($categories)],
             'start_date' => ['required', 'date_format:Y-m-d'],

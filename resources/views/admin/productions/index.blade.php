@@ -17,9 +17,11 @@
             <a href="{{ route('sectors.show', $sector) }}" class="btn btn-secondary" target="_blank" rel="noopener">
                 <x-heroicon-o-chart-bar class="size-4" aria-hidden="true" /> Lihat di portal
             </a>
-            <a href="{{ route('admin.productions.create', $sector) }}" class="btn btn-primary">
-                <x-heroicon-m-plus class="size-4" aria-hidden="true" /> Tambah data
-            </a>
+            @can('create', App\Models\Production::class)
+                <a href="{{ route('admin.productions.create', $sector) }}" class="btn btn-primary">
+                    <x-heroicon-m-plus class="size-4" aria-hidden="true" /> Tambah data
+                </a>
+            @endcan
         </x-slot:actions>
     </x-admin.page-header>
 
@@ -80,6 +82,8 @@
             <x-empty-state title="Belum ada data" icon="heroicon-o-inbox">
                 @if ($query || $status !== 'all')
                     Tidak ada data yang cocok dengan filter ini.
+                @elseif (! auth()->user()->hasAssignedGroups())
+                    Belum ada kelompok yang ditugaskan kepada Anda. Hubungi admin DKPP.
                 @else
                     Mulai dengan menambahkan data {{ strtolower($sector->label()) }} pertama.
                 @endif
@@ -115,7 +119,12 @@
                                         Kel. {{ display_name($production->farmerGroup->village?->name) }}, Kec. {{ display_name($production->farmerGroup->village?->district?->name) }}
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap" data-label="{{ $sector->startDateLabel() }}">{{ format_date($production->start_date) }}</td>
+                                <td class="whitespace-nowrap" data-label="{{ $sector->startDateLabel() }}">
+                                    {{ format_date($production->start_date) }}
+                                    @if ($production->creator)
+                                        <span class="block text-xs text-slate-500">oleh {{ $production->creator->name }}</span>
+                                    @endif
+                                </td>
                                 @if ($sector->initialQuantityLabel())
                                     <td class="num text-right whitespace-nowrap" data-label="{{ $sector->initialQuantityLabel() }}">{{ $production->initial_quantity !== null ? format_quantity($production->initial_quantity, $sector->initialQuantityUnit(), 2) : '–' }}</td>
                                 @endif
@@ -150,8 +159,10 @@
                                     <a href="{{ route('admin.productions.edit', [$sector, $production]) }}" class="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">
                                         <x-heroicon-o-pencil-square class="size-4" aria-hidden="true" /> Ubah<span class="sr-only"> data tanam</span>
                                     </a>
-                                    <x-admin.delete-button :action="route('admin.productions.destroy', [$sector, $production])"
-                                        :confirm="'Hapus data '.display_name($production->commodity->name).' milik '.$production->farmerGroup->name.'? Data panen & penyalurannya ikut terhapus.'" />
+                                    @can('delete', $production)
+                                        <x-admin.delete-button :action="route('admin.productions.destroy', [$sector, $production])"
+                                            :confirm="'Hapus data '.display_name($production->commodity->name).' milik '.$production->farmerGroup->name.'? Data panen & penyalurannya ikut terhapus.'" />
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

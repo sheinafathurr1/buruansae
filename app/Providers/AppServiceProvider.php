@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,5 +31,8 @@ class AppServiceProvider extends ServiceProvider
         Route::resourceVerbs(['create' => 'tambah', 'edit' => 'ubah']);
 
         Paginator::defaultView('partials.pagination-numbered');
+
+        // Menu khusus admin: komoditas & pengguna. Hak per kelompok ada di app/Policies.
+        Gate::define('admin', fn (User $user) => $user->isAdmin());
     }
 }

@@ -18,7 +18,6 @@ class FarmerGroupFactory extends Factory
             'rw' => fake()->numberBetween(1, 20),
             'name' => fake()->unique()->bothify('Buruan SAE ????## RW ##'),
             'leader_name' => fake()->name(),
-            'extension_officer' => fake()->name(),
             'land_area_m2' => fake()->randomFloat(2, 20, 500),
             'land_status' => fake()->randomElement(['Milik Pribadi', 'Fasos/Fasum', 'Pinjam Pakai']),
             'is_active' => true,

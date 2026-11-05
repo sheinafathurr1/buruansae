@@ -1,6 +1,7 @@
 @props(['title' => null, 'scripts' => []])
 @use('App\Enums\SectorType')
 @php
+    $currentUser = auth()->user();
     $currentSector = request()->route('sector');
     $navLink = fn (bool $active) => $active
         ? 'bg-white/10 text-white'
@@ -38,10 +39,10 @@
             </button>
         </div>
 
-        <nav class="flex-1 space-y-6 overflow-y-auto px-3 pt-2 pb-6">
+        <nav class="sidebar-scroll flex-1 space-y-5 overflow-y-auto px-3 pt-2 pb-5">
             <div>
                 <a href="{{ route('admin.dashboard') }}" @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif
-                   class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold transition {{ $navLink(request()->routeIs('admin.dashboard')) }}">
+                   class="flex items-center gap-3 rounded-xl px-3 py-2 font-semibold transition {{ $navLink(request()->routeIs('admin.dashboard')) }}">
                     <x-heroicon-o-home class="size-5" aria-hidden="true" /> Ringkasan
                 </a>
             </div>
@@ -53,7 +54,7 @@
                         @php($active = request()->routeIs('admin.productions.*') && $currentSector === $case)
                         <li>
                             <a href="{{ route('admin.productions.index', $case) }}" @if($active) aria-current="page" @endif
-                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink($active) }}">
+                               class="flex items-center gap-3 rounded-xl px-3 py-1.5 font-medium transition {{ $navLink($active) }}">
                                 <span class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white p-1">
                                     <img src="{{ asset($case->image()) }}" alt="" class="max-h-full max-w-full object-contain">
                                 </span>
@@ -69,18 +70,40 @@
                 <ul class="space-y-0.5">
                     <li>
                         <a href="{{ route('admin.kelompok.index') }}" @if(request()->routeIs('admin.kelompok.*')) aria-current="page" @endif
-                           class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition {{ $navLink(request()->routeIs('admin.kelompok.*')) }}">
-                            <x-heroicon-o-user-group class="size-5" aria-hidden="true" /> Kelompok
+                           class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.kelompok.*')) }}">
+                            <x-heroicon-o-user-group class="size-5" aria-hidden="true" /> {{ $currentUser->isAdmin() ? 'Kelompok' : 'Kelompok binaan' }}
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('admin.komoditas.index') }}" @if(request()->routeIs('admin.komoditas.*')) aria-current="page" @endif
-                           class="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition {{ $navLink(request()->routeIs('admin.komoditas.*')) }}">
-                            <x-heroicon-o-tag class="size-5" aria-hidden="true" /> Komoditas
-                        </a>
-                    </li>
+                    @can('admin')
+                        <li>
+                            <a href="{{ route('admin.komoditas.index') }}" @if(request()->routeIs('admin.komoditas.*')) aria-current="page" @endif
+                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.komoditas.*')) }}">
+                                <x-heroicon-o-tag class="size-5" aria-hidden="true" /> Komoditas
+                            </a>
+                        </li>
+                    @endcan
                 </ul>
             </div>
+
+            @can('admin')
+                <div>
+                    <p class="px-3 pb-2 text-[11px] font-bold tracking-widest text-brand-300 uppercase">Petugas</p>
+                    <ul class="space-y-0.5">
+                        <li>
+                            <a href="{{ route('admin.aktivitas.index') }}" @if(request()->routeIs('admin.aktivitas.*')) aria-current="page" @endif
+                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.aktivitas.*')) }}">
+                                <x-heroicon-o-clipboard-document-list class="size-5" aria-hidden="true" /> Aktivitas petugas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.pengguna.index') }}" @if(request()->routeIs('admin.pengguna.*')) aria-current="page" @endif
+                               class="flex items-center gap-3 rounded-xl px-3 py-2 font-medium transition {{ $navLink(request()->routeIs('admin.pengguna.*')) }}">
+                                <x-heroicon-o-identification class="size-5" aria-hidden="true" /> Pengguna &amp; petugas
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            @endcan
         </nav>
 
         <div class="border-t border-white/10 p-3">
@@ -103,15 +126,16 @@
                 <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-expanded="false" aria-haspopup="true"
                         class="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">
                     <span class="flex size-8 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-800 uppercase" aria-hidden="true">
-                        {{ mb_substr(auth()->user()->name, 0, 1) }}
+                        {{ mb_substr($currentUser->name, 0, 1) }}
                     </span>
-                    <span class="sr-only sm:not-sr-only sm:max-w-40 sm:truncate">{{ auth()->user()->name }}</span>
+                    <span class="sr-only sm:not-sr-only sm:max-w-40 sm:truncate">{{ $currentUser->name }}</span>
                     <x-heroicon-m-chevron-down class="size-4 text-slate-400" aria-hidden="true" />
                 </button>
                 <div x-show="open" x-cloak x-transition.origin.top.right
                      class="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 text-sm shadow-xl">
                     <p class="border-b border-slate-100 px-4 py-2.5 text-xs text-slate-500">
-                        Masuk sebagai<br><span class="font-semibold text-slate-800">{{ auth()->user()->username ?? auth()->user()->email }}</span>
+                        Masuk sebagai<br><span class="font-semibold text-slate-800">{{ $currentUser->username ?? $currentUser->email }}</span>
+                        <span class="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{{ $currentUser->role->label() }}</span>
                     </p>
                     <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
                         <x-heroicon-o-user-circle class="size-5 text-slate-400" aria-hidden="true" /> Profil &amp; kata sandi
