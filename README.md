@@ -71,6 +71,10 @@ Perbedaan dari aplikasi CodeIgniter:
 - **Keamanan login**: dibatasi 5 percobaan per menit per akun (+20 per menit per IP), akun bisa dinonaktifkan, tidak ada
   pendaftaran akun publik. Akun dibuat admin dari menu Pengguna (akun admin pertama lewat perintah `buruansae:user`).
 - **Peran admin & staf** dengan kelompok binaan (aplikasi lama: semua akun punya akses yang sama).
+- **Halaman kedaluwarsa (419)**: form yang dibuka terlalu lama atau sesinya berganti (masuk/keluar di tab lain)
+  tidak lagi menampilkan halaman error. Pengguna dikembalikan ke form dengan pesan; username/isian tetap terisi, kecuali
+  kata sandi. Halaman dashboard & masuk dikirim dengan `Cache-Control: no-store` agar tombol Back tidak memunculkan form
+  lama (dan data dashboard tidak terlihat lagi setelah keluar).
 - **Hapus kelompok** kini *soft delete*: data produksinya tetap tersimpan tetapi tidak lagi dihitung di portal
   (dulu seluruh data produksi kelompok ikut terhapus permanen).
 - **Komoditas yang sudah dipakai** tidak bisa dihapus atau dipindah sektor.

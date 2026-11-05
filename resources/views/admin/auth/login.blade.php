@@ -33,12 +33,16 @@
                 @if (session('status'))
                     <p class="mt-6 rounded-xl bg-brand-50 p-3 text-sm text-brand-900 ring-1 ring-brand-200" role="status">{{ session('status') }}</p>
                 @endif
+                @if (session('warning'))
+                    <p class="mt-6 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200" role="alert">{{ session('warning') }}</p>
+                @endif
 
                 <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5" novalidate>
                     @csrf
-                    <x-form.input name="login" label="Username atau email" :value="old('login')" required autofocus autocomplete="username" />
+                    {{-- Username sudah terisi (gagal masuk / halaman kedaluwarsa): langsung ke kata sandi. --}}
+                    <x-form.input name="login" label="Username atau email" :value="old('login')" required :autofocus="! old('login')" autocomplete="username" />
                     <div x-data="{ show: false }">
-                        <x-form.input name="password" label="Kata sandi" type="password" x-bind:type="show ? 'text' : 'password'" required autocomplete="current-password" />
+                        <x-form.input name="password" label="Kata sandi" type="password" x-bind:type="show ? 'text' : 'password'" required :autofocus="(bool) old('login')" autocomplete="current-password" />
                         <label class="mt-2 flex items-center gap-2 text-sm text-slate-600">
                             <input type="checkbox" x-model="show" class="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Tampilkan kata sandi
                         </label>
